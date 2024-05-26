@@ -52,7 +52,7 @@ add_cxflags("cl::/Zc:preprocessor", {force = true})
 
 includes("extern/imgui","extern/implot")
 
-if "$(visual_pcie)" then
+if has_config(visual_pcie) then
 	includes("extern/pcie6920")
 end
 
@@ -62,7 +62,7 @@ target("das")
 
 	add_deps("imgui","implot")
 
-	if "$(visual_pcie)" then
+	if has_config(visual_pcie) then
 		add_deps("pcie6920")
 	else
 		add_linkdirs("./lib")
@@ -79,4 +79,16 @@ target("das")
 		add_packages("gdi32","shell32","libcmt")
 	end
 	add_files("./source/*.cpp")
+
+	after_build(function (target)
+		if not has_config(visual_pcie) then
+			if is_arch("x64") then
+				os.cp("./lib/pcie6920_250m_64bits_api.dll", target:targetdir())
+			end
+			if is_arch("x86") then
+				os.cp("./lib/pcie6920_250m_32bits_api.dll", target:targetdir())
+			end
+		end
+        
+    end)
 target_end()
