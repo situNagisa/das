@@ -9,6 +9,7 @@ add_includedirs("./include")
 add_includedirs("./extern/imgui/include")
 add_includedirs("./extern/imgui/include/backend")
 add_includedirs("./extern/implot/include")
+add_includedirs("./extern/pcie6920/include")
 
 option("nagisa_root")
 	set_default(os.getenv("NGS_ROOT"))
@@ -40,13 +41,13 @@ end
 
 add_cxflags("cl::/Zc:preprocessor", {force = true})
 
-includes("extern/imgui","extern/implot")
+includes("extern/imgui","extern/implot","extern/pcie6920")
 
 
 target("das")
 	set_kind("binary")
 
-	add_deps("imgui","implot")
+	add_deps("imgui","implot","pcie6920")
 
 	add_packages("vcpkg::glfw3","opengl")
 	if is_plat("windows") then

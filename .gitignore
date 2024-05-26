@@ -1,2 +1,7 @@
 build/
 .xmake/
+.vs/
+_ReSharper.Caches/
+bin/
+temp/
+lib/

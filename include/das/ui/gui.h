@@ -1,7 +1,9 @@
 #pragma once
 
+#include "../config.h"
 #include "./defined.h"
 
+NGS_LIB_MODULE_BEGIN
 
 struct gui
 {
@@ -15,7 +17,7 @@ struct gui
 			});
 		glfw::GLFW::instance().init_opengl(3, 0);
 
-		glfw::window& window = *(_window = ::std::make_unique<glfw::window>("pcie 250 sps data reader", 1480, 700));
+		glfw::window& window = *(_window = ::std::make_unique<glfw::window>("pcie 250 sps data reader", das_config::window_size.first, das_config::window_size.second));
 		::glfwSwapInterval(0); // Enable vsync
 
 		IMGUI_CHECKVERSION();
@@ -79,14 +81,12 @@ struct gui
 
 		~_render_guard()
 		{
-			ImVec4 clear_color = ImVec4(21.f / 255.f, 22.f / 255.f, 23.f / 255.f, 1.00f);
-
 			// Rendering
 			::ImGui::Render();
 
 			auto [display_w, display_h] = _window.get_framebuffer_size();
 			::glViewport(0, 0, display_w, display_h);
-			::glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+			::glClearColor(das_config::background_color.red, das_config::background_color.green, das_config::background_color.blue, das_config::background_color.alpha);
 			::glClear(GL_COLOR_BUFFER_BIT);
 
 			::ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -108,3 +108,5 @@ struct gui
 
 	::std::unique_ptr<::ngs::external::glfw::window> _window;
 };
+
+NGS_LIB_MODULE_END

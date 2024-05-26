@@ -1,8 +1,9 @@
 #pragma once
 
-#include "./runtime_image.h"
+#include "../runtime.h"
 #include "./defined.h"
 
+NGS_LIB_MODULE_BEGIN
 
 struct line_storage
 {
@@ -106,17 +107,27 @@ void render_ui()
 		ImGui::Button("quit");
 
 		ImGui::SeparatorText("unknown");
-		int scan_rate = static_cast<int>(runtime_image.pcie_config.scan_rate);
-		int pulse_width = static_cast<int>(runtime_image.pcie_config.trigger_pulse_width);
-		//static int total_point_number = 8192;
-		float center_frequency = static_cast<float>(runtime_image.pcie_config.center_frequency);
-		//static float fiber_length = 0.0f;
+		{
+			int scan_rate = static_cast<int>(runtime::data.pcie_config.scan_rate);
+			int pulse_width = static_cast<int>(runtime::data.pcie_config.trigger_pulse_width);
+			int total_point_number = static_cast<int>(runtime::data.total_point_number);
+			int center_frequency = static_cast<int>(runtime::data.pcie_config.center_frequency);
+			//static float fiber_length = 0.0f;
 
-		ImGui::DragInt("scan rate", &scan_rate, 100, 0, 10000, "%dhz");
-		ImGui::DragInt("pusle width", &pulse_width, 1, 0, ::std::numeric_limits<int>::max(), "%dms");
-		ImGui::DragInt("total point number", &runtime_image.total_point_number, 256, 0, ::std::numeric_limits<int>::max());
-		ImGui::DragFloat("center frequency", &center_frequency, 1, 0, ::std::numeric_limits<float>::max(), "%.2fm hz");
-		ImGui::DragFloat("fiber length", &runtime_image.fiber_length, 1, 0, ::std::numeric_limits<float>::max(), "%.2fkm");
+			ImGui::DragInt("scan rate", &scan_rate, 100, 0, 10000, "%dhz");
+			ImGui::DragInt("pusle width", &pulse_width, 1, 0, ::std::numeric_limits<int>::max(), "%dms");
+			ImGui::DragInt("total point number", &total_point_number, 256, 0, ::std::numeric_limits<int>::max());
+			ImGui::DragInt("center frequency", &center_frequency, 1, 0, ::std::numeric_limits<int>::max(), "%dmhz");
+			//ImGui::DragFloat("fiber length", &runtime_image.fiber_length, 1, 0, ::std::numeric_limits<float>::max(), "%.2fkm");
+
+			runtime::data.pcie_config.scan_rate = static_cast<::std::uint32_t>(scan_rate);
+			runtime::data.pcie_config.trigger_pulse_width = static_cast<::std::uint32_t>(pulse_width);
+			runtime::data.total_point_number = static_cast<::std::uint32_t>(total_point_number);
+			runtime::data.pcie_config.center_frequency = static_cast<::std::uint32_t>(center_frequency);
+		}
+		
+
+		/*
 
 		ImGui::SeparatorText("unknown");
 		//static int data_source = 0;
@@ -153,10 +164,10 @@ void render_ui()
 			runtime_image.spectrum.data = spectrum;
 			ImGui::ListBox("spectrum", &runtime_image.spectrum.index, runtime_image.spectrum.data.data(), static_cast<int>(runtime_image.spectrum.data.size()));
 		}
-
+		*/
 		ImGui::End();
 	}
-
+	/*
 	if (false && ImGui::Begin("config 2", nullptr, imgui_window_flag))
 	{
 		ImGui::SeparatorText("unknown");
@@ -199,4 +210,7 @@ void render_ui()
 
 		ImGui::End();
 	}
+	*/
 }
+
+NGS_LIB_MODULE_END

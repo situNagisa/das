@@ -12,3 +12,13 @@
 
 #include "implot.h"
 
+#include "pcie6920/pcie6920.h"
+
+#define NGS_LIB_GLOBAL_BEGIN
+#define NGS_LIB_GLOBAL_END
+
+#define NGS_LIB_NAME das
+#define NGS_LIB_VERSION_MAJOR 0
+#define NGS_LIB_VERSION_MINOR 1
+#define NGS_LIB_VERSION_PATCH 0
+#include "NGS/lib/lib.h"
