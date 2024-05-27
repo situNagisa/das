@@ -7,30 +7,25 @@ NGS_LIB_MODULE_BEGIN
 
 struct line_storage
 {
-	::std::vector<float> independent_variable;
-	::std::vector<float> depend_variable_upper;
-	::std::vector<float> depend_variable_lower;
+	::std::vector<short> independent_variable;
+	::std::vector<short> depend_variable;
 
-	void push(const ::std::tuple<float, float, float>& t)
+	void push(short x, short y)
 	{
-		auto&& [i, u, l] = t;
-		independent_variable.push_back(i);
-		depend_variable_upper.push_back(u);
-		depend_variable_lower.push_back(l);
+		independent_variable.push_back(x);
+		depend_variable.push_back(y);
 	}
 };
 
 struct line
 {
-	::std::span<const float> independent_variable;
-	::std::span<const float> depend_variable_upper;
-	::std::span<const float> depend_variable_lower;
+	::std::span<const short> independent_variable;
+	::std::span<const short> depend_variable;
 
 	void bind(const line_storage& storage)
 	{
 		independent_variable = storage.independent_variable;
-		depend_variable_upper = storage.depend_variable_upper;
-		depend_variable_lower = storage.depend_variable_lower;
+		depend_variable = storage.depend_variable;
 	}
 };
 
@@ -76,10 +71,10 @@ struct plot
 
 					for (auto& [line_name, line] : lines)
 					{
-						auto&& [independent_variable, depend_variable_upper, depend_variable_lower] = line;
-						auto size = ::std::min(::std::initializer_list<::std::size_t>{ ::std::ranges::size(independent_variable), ::std::ranges::size(depend_variable_upper), ::std::ranges::size(depend_variable_lower) });
+						auto&& [independent_variable, depend_variable] = line;
+						auto size = ::std::min(::std::initializer_list<::std::size_t>{ ::std::ranges::size(independent_variable), ::std::ranges::size(depend_variable) });
 
-						ImPlot::PlotShaded(line_name.data(), independent_variable.data(), depend_variable_upper.data(), depend_variable_lower.data(), static_cast<int>(size));
+						ImPlot::PlotLine(line_name.data(), independent_variable.data(), depend_variable.data(), static_cast<int>(size));
 					}
 
 					ImPlot::PopStyleVar();
