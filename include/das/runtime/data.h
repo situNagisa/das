@@ -10,7 +10,7 @@ inline struct _runtime_image
 public:
 	float plot_alpha;
 
-	::std::size_t total_point_number = 2;
+	::std::size_t total_point_number = 512;
 	::pcie6920::config pcie_config;
 
 	//float fiber_length;

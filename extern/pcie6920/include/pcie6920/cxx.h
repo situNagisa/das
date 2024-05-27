@@ -73,15 +73,17 @@ namespace pcie6920
 				return size;
 			}
 
-			::std::size_t read(void* destination, ::std::size_t size) const
+			::std::size_t read(void* destination, ::std::size_t point_size) const
 			{
 				unsigned int actual_size;
-				if (c_api::pcie6920_read_data(static_cast<unsigned int>(size) / sizeof(short), reinterpret_cast<short*>(destination), &actual_size))
+				if (c_api::pcie6920_read_data(static_cast<unsigned>(point_size), reinterpret_cast<short*>(destination), &actual_size))
 				{
 					throw ::std::runtime_error("read data fail!");
 				}
 				return actual_size;
 			}
+
+
 		};
 
 		bool config(const config& config) const

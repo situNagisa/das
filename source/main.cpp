@@ -45,17 +45,17 @@ int main(int, char**)
 
 	::das::runtime::data.pcie_config = {
 		.demodulation_channel_quantity = ::pcie6920::channel_quantity::_1,
-		.points_per_scan = 100,
-		.scan_rate = 1,
-		.trigger_pulse_width = 2,
-		.center_frequency = 3,
+		.points_per_scan = 256 * 64,
+		.scan_rate = 2000,
+		.trigger_pulse_width = 4,
+		.center_frequency = 80000000,
 		.data_source_sel = ::pcie6920::parse_rule::raw_data,
 		.upload_rate_sel = ::pcie6920::upload_rate::_250m
 	};
 
 	::pcie6920::instance.config(::das::runtime::data.pcie_config);
 
-	::std::vector<::std::byte> read_buffer{};
+	::std::vector<short> read_buffer{};
 
 	while (!gui.window().is_should_close())
 	{
@@ -70,9 +70,9 @@ int main(int, char**)
 			//	::std::this_thread::sleep_for(1ms);
 			//} while (read_guard.point_number_per_channel_in_buffer_query() < static_cast<::std::size_t>(runtime_image.total_point_number));
 
-			read_buffer.resize(::das::runtime::data.total_point_number * 2 * sizeof(short));
+			read_buffer.resize(::das::runtime::data.total_point_number);
 
-			read_buffer.resize(read_guard.read(read_buffer.data(), ::das::runtime::data.total_point_number * 2 * sizeof(short)));
+			read_buffer.resize(read_guard.read(read_buffer.data(), ::das::runtime::data.total_point_number));
 		}
 
 		if(::das::runtime::data.pcie_config.data_source_sel == pcie6920::parse_rule::raw_data)
