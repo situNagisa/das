@@ -3,16 +3,10 @@
 using packet_type = ::pcie6920::atomic::packet<pcie6920::enums::parse_rule::raw_data, pcie6920::enums::channel_quantity::_1>;
 
 
-auto start(::pcie6920::guard::open& pcie, ::pcie6920::guard::io& io,::das::ui::line_storage& channel0, ::das::ui::line_storage& channel1,::std::size_t time)
+auto start(::das::ui::line_storage& channel0, ::das::ui::line_storage& channel1,::std::size_t time, ::std::span<packet_type> read_buffer)
 {
-	::std::vector<packet_type> read_buffer(io.buffer_packet_size());
-
-	read_buffer.resize(io.read(read_buffer));
-
 	if (::das::runtime::data.pcie_config.data_source_sel == pcie6920::enums::parse_rule::raw_data)
 	{
-		
-
 		auto buffer = ::pcie6920::atomic::unpack(read_buffer);
 		auto push = [time](::das::ui::line_storage& line, decltype(buffer) buffer, ::std::size_t channel_index)
 			{
@@ -189,9 +183,8 @@ int main(int, char**)
 	::pcie6920::atomic::config(::das::runtime::data.pcie_config);
 
 	::std::vector<packet_type> read_buffer{};
+	::std::size_t read_buffer_index{};
 	::std::size_t time = 0;
-
-	auto now = ::std::chrono::system_clock::now();
 
 	while (!gui.window().is_should_close())
 	{
@@ -260,20 +253,31 @@ int main(int, char**)
 					ImGui::End();
 				}
 			}
+
 			if(::das::runtime::data.recording)
 			{
-				if (auto io = pcie.io(); io.buffer_packet_size() > 0)
+				auto io = pcie.io();
+
+				if (read_buffer_index < read_buffer.size())
 				{
-					if (true || ::std::chrono::system_clock::now() - now > 1s)
-					{
-						now = ::std::chrono::system_clock::now();
-
-						time = start(pcie, io, channel0_line_data, channel1_line_data, time);
-
-						channel0_line.bind(channel0_line_data);
-						channel1_line.bind(channel1_line_data);
-					}
+					time = start(channel0_line_data, channel1_line_data, time, ::std::span{ read_buffer }.subspan(read_buffer_index, 1));
+					++read_buffer_index;
 				}
+
+				if ( io.buffer_packet_size())
+				{
+					if(read_buffer_index < read_buffer.size())
+					{
+						time = start(channel0_line_data, channel1_line_data, time, ::std::span{ read_buffer }.subspan(read_buffer_index) );
+					}
+					read_buffer_index = 0;
+
+					read_buffer.resize(io.buffer_packet_size());
+					read_buffer.resize(io.read(read_buffer));
+				}
+
+				channel0_line.bind(channel0_line_data);
+				channel1_line.bind(channel1_line_data);
 			}
 			plot.render();
 		}
