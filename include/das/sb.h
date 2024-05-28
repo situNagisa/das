@@ -6,7 +6,9 @@
 #include <cvirte.h>		
 #include <userint.h>
 #include "PCIe6920_DEMO.h"
-#include "pcie6920_api.h"
+#include "pcie6920/pcie6920.h"
+
+using namespace ::pcie6920::c_api;
 
 static int panelHandle;
 int status;
