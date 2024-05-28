@@ -6,17 +6,18 @@
 
 NGS_LIB_MODULE_BEGIN
 
+constexpr auto unit_size_per_packet() {  return 0x100; }
+
+constexpr auto unit_size(::std::size_t packet_size) { return packet_size * NGS_LIB_MODULE_NAME::unit_size_per_packet(); }
+constexpr auto packet_size_floor(::std::size_t unit_size) { return unit_size / NGS_LIB_MODULE_NAME::unit_size_per_packet(); }
+constexpr auto packet_size_ceil(::std::size_t unit_size) { return NGS_LIB_MODULE_NAME::packet_size_floor(unit_size) + static_cast<bool>(unit_size % NGS_LIB_MODULE_NAME::unit_size_per_packet()); }
+
 template<enums::parse_rule ParseRule, enums::channel_quantity Quantity>
-struct packet : ::ngs::external::stl::ranges::range_interface<unit<ParseRule, Quantity>>
+using packet = ::std::array<unit<ParseRule, Quantity>, NGS_LIB_MODULE_NAME::unit_size_per_packet()>;
+
+constexpr auto unpack(::std::ranges::contiguous_range auto&& packet_range)
 {
-	using unit_type = unit<ParseRule,Quantity>;
-
-	constexpr auto begin() { return _data.begin(); }
-	constexpr auto begin() const { return _data.begin(); }
-	constexpr auto end() { return _data.end(); }
-	constexpr auto end() const { return _data.end(); }
-
-	::std::array<unit_type, 0x100> _data;
-};
+	return ::std::span{ ::std::ranges::data(*::std::ranges::begin(packet_range)), NGS_LIB_MODULE_NAME::unit_size(::std::ranges::size(packet_range)) };
+}
 
 NGS_LIB_MODULE_END

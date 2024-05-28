@@ -8,10 +8,8 @@ inline struct _runtime_image
 {
 	NGS_PP_INJECT_BEGIN(_runtime_image);
 public:
-	float plot_alpha;
-
-	::std::size_t total_point_number =  512;
-	::pcie6920::config pcie_config;
+	::std::size_t packet_size_per_scan = 1;
+	::pcie6920::atomic::info pcie_config;
 
 	//float fiber_length;
 	//combo_list data_source;

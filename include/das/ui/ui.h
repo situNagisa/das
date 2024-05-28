@@ -5,22 +5,35 @@
 
 NGS_LIB_MODULE_BEGIN
 
+using integral_type = ::std::int32_t;
+
 struct line_storage
 {
-	::std::vector<short> independent_variable;
-	::std::vector<short> depend_variable;
+	::std::vector<integral_type> independent_variable;
+	::std::vector<integral_type> depend_variable;
 
-	void push(short x, short y)
+	void push(integral_type x, integral_type y)
 	{
 		independent_variable.push_back(x);
 		depend_variable.push_back(y);
+	}
+
+	void resize(::std::size_t size)
+	{
+		independent_variable.resize(size);
+		depend_variable.resize(size);
+	}
+
+	auto size() const
+	{
+		return ::std::min(independent_variable.size(), depend_variable.size());
 	}
 };
 
 struct line
 {
-	::std::span<const short> independent_variable;
-	::std::span<const short> depend_variable;
+	::std::span<const integral_type> independent_variable;
+	::std::span<const integral_type> depend_variable;
 
 	void bind(const line_storage& storage)
 	{
@@ -105,19 +118,19 @@ void render_ui()
 		{
 			int scan_rate = static_cast<int>(runtime::data.pcie_config.scan_rate);
 			int pulse_width = static_cast<int>(runtime::data.pcie_config.trigger_pulse_width);
-			int total_point_number = static_cast<int>(runtime::data.total_point_number);
+			int packet_size_per_scan = static_cast<int>(runtime::data.packet_size_per_scan);
 			int center_frequency = static_cast<int>(runtime::data.pcie_config.center_frequency);
 			//static float fiber_length = 0.0f;
 
 			ImGui::DragInt("scan rate", &scan_rate, 100, 0, 10000, "%dhz");
 			ImGui::DragInt("pusle width", &pulse_width, 1, 0, ::std::numeric_limits<int>::max(), "%dms");
-			ImGui::DragInt("total point number", &total_point_number, 256, 0, ::std::numeric_limits<int>::max());
+			ImGui::DragInt("packet size per scan", &packet_size_per_scan, 256, 0, ::std::numeric_limits<int>::max());
 			ImGui::DragInt("center frequency", &center_frequency, 1, 0, ::std::numeric_limits<int>::max(), "%dmhz");
 			//ImGui::DragFloat("fiber length", &runtime_image.fiber_length, 1, 0, ::std::numeric_limits<float>::max(), "%.2fkm");
 
 			runtime::data.pcie_config.scan_rate = static_cast<::std::uint32_t>(scan_rate);
 			runtime::data.pcie_config.trigger_pulse_width = static_cast<::std::uint32_t>(pulse_width);
-			runtime::data.total_point_number = static_cast<::std::uint32_t>(total_point_number);
+			runtime::data.packet_size_per_scan = static_cast<::std::uint32_t>(packet_size_per_scan);
 			runtime::data.pcie_config.center_frequency = static_cast<::std::uint32_t>(center_frequency);
 		}
 		

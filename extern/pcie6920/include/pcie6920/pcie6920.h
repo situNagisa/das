@@ -1,7 +1,8 @@
 #pragma once
 
 #include "./c.h"
-#include "./cxx.h"
+#include "./atomic.h"
+#include "./guard.h"
 
 #include "NGS/lib/lib_end.h"
 #undef NGS_LIB_GLOBAL_BEGIN

@@ -26,13 +26,4 @@ inline bool config(const info& info)
 	return true;
 }
 
-
-
-::std::size_t read(const info& info, ::std::size_t pack_size, ::std::ranges::contiguous_range auto&& result)
-	requires (!::std::is_const_v<::ngs::type_traits::object_t<::std::ranges::range_value_t<decltype(result)>>>)
-{
-	auto size = pack_size * 0x100;
-	NGS_ASSERT_VERIFY(sizeof(::std::ranges::range_value_t<decltype(result)>) * ::std::ranges::size(NGS_PP_PERFECT_FORWARD(result)) >= pack_size * )
-}
-
 NGS_LIB_MODULE_END

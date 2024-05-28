@@ -35,7 +35,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\pcie6920\atomic\algorithm.h" />
+    <ClInclude Include="include\pcie6920\atomic.h" />
+    <ClInclude Include="include\pcie6920\atomic\config.h" />
     <ClInclude Include="include\pcie6920\atomic\info.h" />
     <ClInclude Include="include\pcie6920\atomic\defined.h" />
     <ClInclude Include="include\pcie6920\atomic\io.h" />
@@ -43,9 +44,12 @@
     <ClInclude Include="include\pcie6920\atomic\point.h" />
     <ClInclude Include="include\pcie6920\atomic\unit.h" />
     <ClInclude Include="include\pcie6920\c.h" />
-    <ClInclude Include="include\pcie6920\cxx.h" />
     <ClInclude Include="include\pcie6920\defined.h" />
     <ClInclude Include="include\pcie6920\enum.h" />
+    <ClInclude Include="include\pcie6920\guard.h" />
+    <ClInclude Include="include\pcie6920\guard\defined.h" />
+    <ClInclude Include="include\pcie6920\guard\open.h" />
+    <ClInclude Include="include\pcie6920\guard\io.h" />
     <ClInclude Include="include\pcie6920\pcie6920.h" />
   </ItemGroup>
   <ItemGroup>

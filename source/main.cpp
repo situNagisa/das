@@ -1,8 +1,11 @@
 ﻿#include "./das/das.h"
 
+
 // Main code
 int main(int, char**)
 {
+	using namespace ::std::chrono_literals;
+
 	::das::ui::gui gui{};
 	::das::ui::plot plot{ "shaded plots"};
 	plot.push_graph({
@@ -52,90 +55,68 @@ int main(int, char**)
 		.data_source_sel = ::pcie6920::enums::parse_rule::raw_data,
 		.upload_rate_sel = ::pcie6920::enums::upload_rate::_250m
 	};
+	using packet_type = ::pcie6920::atomic::packet<pcie6920::enums::parse_rule::raw_data, pcie6920::enums::channel_quantity::_1>;
 
-	::pcie6920::instance.config(::das::runtime::data.pcie_config);
+	::pcie6920::guard::open pcie{};
+	::pcie6920::atomic::config(::das::runtime::data.pcie_config);
 
-	::std::vector<short> read_buffer{};
+	::std::vector<packet_type> read_buffer{};
 	::std::size_t time = 0;
 
 	auto now = ::std::chrono::system_clock::now();
 
 	while (!gui.window().is_should_close())
 	{
-		using namespace ::std::chrono_literals;
-
 		auto render_guard = gui.render_guard();
-		
-		if (::std::chrono::system_clock::now() - now > 1s)
 		{
-			now = ::std::chrono::system_clock::now();
-
+			if(auto io = pcie.io(); io.buffer_packet_size() >= ::das::runtime::data.packet_size_per_scan)
 			{
-				auto read_guard = ::pcie6920::instance.read_guard();
-
-				//do
-				//{
-				//	using namespace ::std::chrono_literals;
-				//	::std::this_thread::sleep_for(1ms);
-				//} while (read_guard.point_number_per_channel_in_buffer_query() < static_cast<::std::size_t>(::das::runtime::data.total_point_number));
-
-				read_buffer.resize(::das::runtime::data.total_point_number);
-
-				read_buffer.resize(read_guard.read(read_buffer.data(), ::das::runtime::data.total_point_number / 2));
-			}
-
-			if (::das::runtime::data.pcie_config.data_source_sel == pcie6920::enums::parse_rule::raw_data)
-			{
-				struct raw_data
+				if (::std::chrono::system_clock::now() - now > 1s)
 				{
-					short channel0;
-					short channel1;
-				};
-				::std::span buffer(reinterpret_cast<raw_data*>(read_buffer.data()), read_buffer.size() / sizeof(raw_data));
+					now = ::std::chrono::system_clock::now();
+					{
+						read_buffer.resize(::das::runtime::data.packet_size_per_scan);
 
-				constexpr auto limit_point = ::std::numeric_limits<short>::max() / 8;
+						read_buffer.resize(io.read(read_buffer));
+					}
 
-				channel0_line_data.independent_variable.reserve(channel0_line_data.independent_variable.size() + buffer.size());
-				channel0_line_data.depend_variable.reserve(channel0_line_data.depend_variable.size() + buffer.size());
+					if (::das::runtime::data.pcie_config.data_source_sel == pcie6920::enums::parse_rule::raw_data)
+					{
+						constexpr ::std::size_t limit_point = ::std::numeric_limits<short>::max() / 16;
 
-				channel1_line_data.independent_variable.reserve(channel1_line_data.independent_variable.size() + buffer.size());
-				channel1_line_data.depend_variable.reserve(channel1_line_data.depend_variable.size() + buffer.size());
+						auto buffer = ::pcie6920::atomic::unpack(read_buffer);
+						auto push = [time](::das::ui::line_storage& line, decltype(buffer) buffer, ::std::size_t channel_index)
+							{
+								auto push_size = ::std::min(limit_point, ::std::ranges::size(buffer));
 
-				for (auto&& [channel0, channel1] : buffer)
-				{
-					channel0_line_data.push(static_cast<short>(time), channel0);
-					channel1_line_data.push(static_cast<short>(time), channel1);
-					time++;
-				}
+								if (line.size() >= limit_point)
+								{
+									::std::ranges::shift_left(line.independent_variable, static_cast<long long>(::std::ranges::size(buffer)));
+									::std::ranges::shift_left(line.depend_variable, static_cast<long long>(::std::ranges::size(buffer)));
+									line.resize(limit_point - push_size);
+								}
+								auto t = time;
+								for (auto&& unit : buffer | ::std::views::take(push_size))
+								{
+									line.push(static_cast<::std::int32_t>(t), unit[static_cast<long long>(channel_index)].data);
+									t++;
+								}
+							};
 
-				if (channel0_line_data.independent_variable.size() > limit_point)
-				{
-					::std::ranges::shift_left(channel0_line_data.independent_variable, static_cast<long long>(
-						channel0_line_data.independent_variable.size() - limit_point));
-					::std::ranges::shift_left(channel0_line_data.depend_variable, static_cast<long long>(
-						channel0_line_data.depend_variable.size() - limit_point));
-					channel0_line_data.independent_variable.resize(limit_point);
-					channel0_line_data.depend_variable.resize(limit_point);
-				}
-				if (channel1_line_data.independent_variable.size() > limit_point)
-				{
-					::std::ranges::shift_left(channel1_line_data.independent_variable, static_cast<long long>(
-						channel1_line_data.independent_variable.size() - limit_point));
-					::std::ranges::shift_left(channel1_line_data.depend_variable, static_cast<long long>(
-						channel1_line_data.depend_variable.size() - limit_point));
-					channel1_line_data.independent_variable.resize(limit_point);
-					channel1_line_data.depend_variable.resize(limit_point);
+						push(channel0_line_data, buffer, 0);
+						push(channel1_line_data, buffer, 1);
+
+						time += ::std::ranges::size(buffer);
+
+						channel0_line.bind(channel0_line_data);
+						channel1_line.bind(channel1_line_data);
+					}
 				}
 			}
 
-			channel0_line.bind(channel0_line_data);
-			channel1_line.bind(channel1_line_data);
+			plot.render();
+			::das::ui::render_ui();
 		}
-		
-		plot.render();
-		::das::ui::render_ui();
-
-
 	}
 
 	return 0;
