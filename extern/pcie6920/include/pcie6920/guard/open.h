@@ -11,7 +11,13 @@ struct open
 {
 	open()
 	{
-		NGS_ASSERT_VERIFY(!c_api::pcie6920_open(), "the pcie6920 open fail! pcie may be open somewhere else, please close it and try again");
+		if(c_api::pcie6920_open())
+		{
+			using namespace ::std::chrono_literals;
+			c_api::pcie6920_close();
+			::std::this_thread::sleep_for(1s);
+			NGS_ASSERT_VERIFY(!c_api::pcie6920_open(), "the pcie6920 open fail! pcie may be open somewhere else, please close it and try again");
+		}
 	}
 	~open()
 	{

@@ -26,7 +26,7 @@ namespace pcie6920
 
 		int pcie6920_set_points_num_per_scan(unsigned point_num_per_scan)
 		{
-			config.points_per_scan = point_num_per_scan;
+			config.packets_per_scan = point_num_per_scan;
 			return 0;
 		}
 

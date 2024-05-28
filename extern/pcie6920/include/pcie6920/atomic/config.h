@@ -2,6 +2,7 @@
 
 #include "../c.h"
 #include "./info.h"
+#include "./packet.h"
 #include "./defined.h"
 
 NGS_LIB_MODULE_BEGIN
@@ -10,7 +11,7 @@ inline bool config(const info& info)
 {
 	if (c_api::pcie6920_demodulation_ch_quantity_set(static_cast<unsigned>(info.demodulation_channel_quantity)))
 		return false;
-	if (c_api::pcie6920_set_points_num_per_scan(info.points_per_scan))
+	if (c_api::pcie6920_set_points_num_per_scan(NGS_LIB_MODULE_NAME::unit_size(info.packets_per_scan)))
 		return false;
 	if (c_api::pcie6920_set_scan_rate(info.scan_rate))
 		return false;

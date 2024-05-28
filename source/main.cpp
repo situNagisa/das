@@ -5,7 +5,7 @@ using packet_type = ::pcie6920::atomic::packet<pcie6920::enums::parse_rule::raw_
 
 auto start(::pcie6920::guard::open& pcie, ::pcie6920::guard::io& io,::das::ui::line_storage& channel0, ::das::ui::line_storage& channel1,::std::size_t time)
 {
-	::std::vector<packet_type> read_buffer(::das::runtime::data.packet_size_per_scan);
+	::std::vector<packet_type> read_buffer(io.buffer_packet_size());
 
 	read_buffer.resize(io.read(read_buffer));
 
@@ -177,7 +177,7 @@ int main(int, char**)
 
 	::das::runtime::data.pcie_config = {
 		.demodulation_channel_quantity = ::pcie6920::enums::channel_quantity::_1,
-		.points_per_scan = 256 * 64,
+		.packets_per_scan = 64,
 		.scan_rate = 2000,
 		.trigger_pulse_width = 4,
 		.center_frequency = 80000000,
@@ -230,11 +230,6 @@ int main(int, char**)
 						channel1_line.bind(channel1_line_data);
 						time = 0;
 					}
-					{
-						int packet_size_per_scan = static_cast<int>(runtime::data.packet_size_per_scan);
-						ImGui::DragInt("packet size", &packet_size_per_scan, 1, 1, 32);
-						runtime::data.packet_size_per_scan = static_cast<::std::uint32_t>(packet_size_per_scan);
-					}
 
 					ImGui::SeparatorText("config");
 					{
@@ -243,20 +238,19 @@ int main(int, char**)
 							::pcie6920::atomic::config(::das::runtime::data.pcie_config);
 						}
 						{
+							int packets_per_scan = static_cast<int>(runtime::data.pcie_config.packets_per_scan);
 							int scan_rate = static_cast<int>(runtime::data.pcie_config.scan_rate);
 							int pulse_width = static_cast<int>(runtime::data.pcie_config.trigger_pulse_width);
 							int center_frequency = static_cast<int>(runtime::data.pcie_config.center_frequency);
 							//static float fiber_length = 0.0f;
 
-							
-
+							ImGui::DragInt("packets/scan", &packets_per_scan, 1, 0, 128, "%d");
 							ImGui::DragInt("scan rate", &scan_rate, 100, 0, 10000, "%dhz");
 							ImGui::DragInt("pusle width", &pulse_width, 1, 0, ::std::numeric_limits<int>::max(), "%dms");
 							ImGui::DragInt("center frequency", &center_frequency, 1, 0, ::std::numeric_limits<int>::max(), "%dmhz");
 							//ImGui::DragFloat("fiber length", &runtime_image.fiber_length, 1, 0, ::std::numeric_limits<float>::max(), "%.2fkm");
 
-							
-
+							runtime::data.pcie_config.packets_per_scan = static_cast<::std::uint32_t>(packets_per_scan);
 							runtime::data.pcie_config.scan_rate = static_cast<::std::uint32_t>(scan_rate);
 							runtime::data.pcie_config.trigger_pulse_width = static_cast<::std::uint32_t>(pulse_width);
 							runtime::data.pcie_config.center_frequency = static_cast<::std::uint32_t>(center_frequency);
@@ -268,9 +262,9 @@ int main(int, char**)
 			}
 			if(::das::runtime::data.recording)
 			{
-				if (auto io = pcie.io(); io.buffer_packet_size() >= ::das::runtime::data.packet_size_per_scan)
+				if (auto io = pcie.io(); io.buffer_packet_size() > 0)
 				{
-					if (::std::chrono::system_clock::now() - now > 1s)
+					if (true || ::std::chrono::system_clock::now() - now > 1s)
 					{
 						now = ::std::chrono::system_clock::now();
 
