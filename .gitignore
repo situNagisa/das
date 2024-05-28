@@ -4,3 +4,5 @@ build/
 _ReSharper.Caches/
 bin/
 temp/
+lib/x64
+lib/x86
