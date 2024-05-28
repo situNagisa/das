@@ -32,7 +32,7 @@ public:
 	::std::size_t buffer_packet_size() const
 	{
 		auto size = self_type::buffer_unit_size();
-		NGS_EXPECT(size % atomic::unit_size_per_packet() == 0);
+		//NGS_EXPECT(size % atomic::unit_size_per_packet() == 0);
 		return atomic::packet_size_floor(size);
 	}
 

@@ -8,6 +8,7 @@ inline struct _runtime_image
 {
 	NGS_PP_INJECT_BEGIN(_runtime_image);
 public:
+	bool recording = false;
 	::std::size_t packet_size_per_scan = 1;
 	::pcie6920::atomic::info pcie_config;
 
