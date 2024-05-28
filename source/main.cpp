@@ -11,18 +11,18 @@ auto start(::pcie6920::guard::open& pcie, ::pcie6920::guard::io& io,::das::ui::l
 
 	if (::das::runtime::data.pcie_config.data_source_sel == pcie6920::enums::parse_rule::raw_data)
 	{
-		constexpr ::std::size_t limit_point = ::std::numeric_limits<short>::max() / 16;
+		
 
 		auto buffer = ::pcie6920::atomic::unpack(read_buffer);
 		auto push = [time](::das::ui::line_storage& line, decltype(buffer) buffer, ::std::size_t channel_index)
 			{
-				auto push_size = ::std::min(limit_point, ::std::ranges::size(buffer));
+				auto push_size = ::std::min(::das::das_config::limit_point, ::std::ranges::size(buffer));
 
-				if (line.size() >= limit_point)
+				if (line.size() >= ::das::das_config::limit_point)
 				{
 					::std::ranges::shift_left(line.independent_variable, static_cast<long long>(::std::ranges::size(buffer)));
 					::std::ranges::shift_left(line.depend_variable, static_cast<long long>(::std::ranges::size(buffer)));
-					line.resize(limit_point - push_size);
+					line.resize(::das::das_config::limit_point - push_size);
 				}
 				auto t = time;
 				for (auto&& unit : buffer | ::std::views::take(push_size))
@@ -46,7 +46,7 @@ void render_ui()
 	using namespace ::das;
 	using namespace ::das::ui;
 
-	if (ImGui::Begin("config 1", nullptr, imgui_window_flag))
+	if (ImGui::Begin("config 1", nullptr, das_config::imgui_window_flag))
 	{
 
 
@@ -144,41 +144,33 @@ int main(int, char**)
 	::das::ui::gui gui{};
 	::das::ui::plot plot{ "shaded plots"};
 	plot.push_graph({
-			.title = "main",
+			.title = "channel 0",
 			.width = 900,
 			.height = 300,
 			.lines = {
 				{
-					"channel 0",
+					"channel",
 					::das::ui::line{}
 				},
-				{
-					"channel 1",
-					::das::ui::line{}
-				}
 			}
 		});
 	plot.push_graph({
-			.title = "analyse",
+			.title = "channel 1",
 			.width = 900,
 			.height = 300,
 			.lines = {
 				{
-					"channel 0",
-					::das::ui::line{}
-				},
-				{
-					"channel 1",
+					"channel",
 					::das::ui::line{}
 				}
 			}
 		});
 
-	auto&& main_graph = plot.graph()[0];
-	auto&& analyse_graph = plot.graph()[1];
+	auto&& graph_channel0 = plot.graph()[0];
+	auto&& graph_channel1 = plot.graph()[1];
 
-	auto&& channel0_line = main_graph.lines.at("channel 0");
-	auto&& channel1_line = main_graph.lines["channel 1"];
+	auto&& channel0_line = graph_channel0.lines["channel"];
+	auto&& channel1_line = graph_channel1.lines["channel"];
 
 	::das::ui::line_storage channel0_line_data{};
 	::das::ui::line_storage channel1_line_data{};
@@ -209,31 +201,44 @@ int main(int, char**)
 				using namespace ::das;
 				using namespace ::das::ui;
 
-				if (ImGui::Begin("config 1", nullptr, imgui_window_flag))
+				ImGui::SetNextWindowPos({ 8,23 }, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize({ 348,272 }, ImGuiCond_FirstUseEver);
+				if (ImGui::Begin("config 1", nullptr, das_config::imgui_window_flag))
 				{
+					constexpr auto width = 100;
+					ImGui::PushItemWidth(150);
+
 					if (runtime::data.recording)
 					{
-						if (ImGui::Button("stop"))
+						if (ImGui::Button("stop",{ width , 0}))
 						{
 							runtime::data.recording = false;
 						}
 					}
 					else
 					{
-						if (ImGui::Button("start"))
+						if (ImGui::Button("start", { width , 0 }))
 						{
 							runtime::data.recording = true;
 						}
 					}
+					if(ImGui::Button("clear", { width , 0 }))
+					{
+						channel0_line_data.clear();
+						channel1_line_data.clear();
+						channel0_line.bind(channel0_line_data);
+						channel1_line.bind(channel1_line_data);
+						time = 0;
+					}
 					{
 						int packet_size_per_scan = static_cast<int>(runtime::data.packet_size_per_scan);
-						ImGui::DragInt("packet size per scan", &packet_size_per_scan, 1, 1, 32);
+						ImGui::DragInt("packet size", &packet_size_per_scan, 1, 1, 32);
 						runtime::data.packet_size_per_scan = static_cast<::std::uint32_t>(packet_size_per_scan);
 					}
 
 					ImGui::SeparatorText("config");
 					{
-						if (ImGui::Button("config"))
+						if (ImGui::Button("config", { width , 0 }))
 						{
 							::pcie6920::atomic::config(::das::runtime::data.pcie_config);
 						}
@@ -243,17 +248,21 @@ int main(int, char**)
 							int center_frequency = static_cast<int>(runtime::data.pcie_config.center_frequency);
 							//static float fiber_length = 0.0f;
 
+							
+
 							ImGui::DragInt("scan rate", &scan_rate, 100, 0, 10000, "%dhz");
 							ImGui::DragInt("pusle width", &pulse_width, 1, 0, ::std::numeric_limits<int>::max(), "%dms");
 							ImGui::DragInt("center frequency", &center_frequency, 1, 0, ::std::numeric_limits<int>::max(), "%dmhz");
 							//ImGui::DragFloat("fiber length", &runtime_image.fiber_length, 1, 0, ::std::numeric_limits<float>::max(), "%.2fkm");
+
+							
 
 							runtime::data.pcie_config.scan_rate = static_cast<::std::uint32_t>(scan_rate);
 							runtime::data.pcie_config.trigger_pulse_width = static_cast<::std::uint32_t>(pulse_width);
 							runtime::data.pcie_config.center_frequency = static_cast<::std::uint32_t>(center_frequency);
 						}
 					}
-
+					ImGui::PopItemWidth();
 					ImGui::End();
 				}
 			}

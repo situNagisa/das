@@ -5,15 +5,15 @@
 NGS_LIB_BEGIN
 
 #if !defined(DAS_CONFIG_FONT_FILE)
-#	define DAS_CONFIG_FONT_FILE ""
+#	define DAS_CONFIG_FONT_FILE "../../misc/fonts/Roboto-Medium.ttf"
 #endif
 
 #if !defined(DAS_CONFIG_WINDOW_SIZE_WIDTH)
-#	define DAS_CONFIG_WINDOW_SIZE_WIDTH 1480
+#	define DAS_CONFIG_WINDOW_SIZE_WIDTH 1300
 #endif
 
 #if !defined(DAS_CONFIG_WINDOW_SIZE_HEIGHT)
-#	define DAS_CONFIG_WINDOW_SIZE_HEIGHT 720
+#	define DAS_CONFIG_WINDOW_SIZE_HEIGHT 670
 #endif
 
 #if !defined(DAS_CONFIG_BACKGROUND_COLOR)
@@ -39,6 +39,7 @@ struct das_config
 		float blue;
 		float alpha;
 	} background_color = DAS_CONFIG_BACKGROUND_COLOR;
+	constexpr static ::std::size_t limit_point = ::std::numeric_limits<short>::max() / 16;
 };
 
 NGS_LIB_END

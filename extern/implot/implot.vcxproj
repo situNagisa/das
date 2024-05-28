@@ -36,7 +36,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\implot.cpp" />
-    <ClInclude Include="include\implot_demo.cpp" />
     <ClCompile Include="include\implot_items.cpp" />
   </ItemGroup>
   <ItemGroup>

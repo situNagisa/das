@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../runtime.h"
+#include "../config.h"
 #include "./defined.h"
 
 NGS_LIB_MODULE_BEGIN
@@ -28,6 +29,12 @@ struct line_storage
 	{
 		return ::std::min(independent_variable.size(), depend_variable.size());
 	}
+
+	void clear()
+	{
+		independent_variable.clear();
+		depend_variable.clear();
+	}
 };
 
 struct line
@@ -50,15 +57,6 @@ struct graph
 	::std::unordered_map<::std::string, line> lines;
 };
 
-inline constexpr auto imgui_window_flag = 
-	ImGuiWindowFlags_NoTitleBar
-#if !defined(NGS_BUILD_TYPE_IS_DEBUG)
-//	| ImGuiWindowFlags_NoMove
-#endif
-	| ImGuiWindowFlags_AlwaysAutoResize
-	| ImGuiWindowFlags_NoBackground
-;
-
 struct plot
 {
 	::std::string _title;
@@ -73,25 +71,32 @@ struct plot
 
 	void render()
 	{
-		if (ImGui::Begin(_title.data(), nullptr, imgui_window_flag))
+		ImGui::SetNextWindowPos({ 376,17 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({ 916,620 }, ImGuiCond_FirstUseEver);
+		if (ImGui::Begin(_title.data(), nullptr, das_config::imgui_window_flag))
 		{
-			static float alpha = 0.25f;
-			ImGui::DragFloat("alpha", &alpha, 0.01f, 0, 1);
-
 			for (auto&& [title, width, height, lines] : _graphs)
 			{
 				if (ImPlot::BeginPlot(title.data(), { width,height })) {
-					ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, alpha);
-
 					for (auto& [line_name, line] : lines)
 					{
 						auto&& [independent_variable, depend_variable] = line;
 						auto size = ::std::min(::std::initializer_list<::std::size_t>{ ::std::ranges::size(independent_variable), ::std::ranges::size(depend_variable) });
 
+						ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_None, ImPlotAxisFlags_AutoFit);
+						if(!independent_variable.empty())
+						{
+							ImPlot::SetupAxisLimits(ImAxis_X1, independent_variable.front(), independent_variable.front() + das_config::limit_point, ImGuiCond_Always);
+						}
+						//if(!depend_variable.empty())
+						//{
+						//	ImPlot::SetupAxisLimits(ImAxis_Y1, depend_variable.front(), depend_variable.back(), ImGuiCond_Appearing);
+						//}
+						//ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
+						ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
+
 						ImPlot::PlotLine(line_name.data(), independent_variable.data(), depend_variable.data(), static_cast<int>(size));
 					}
-
-					ImPlot::PopStyleVar();
 					ImPlot::EndPlot();
 				}
 			}
