@@ -11,7 +11,7 @@
 
 #include "./defined.h"
 
-#define NGS_LIB_MODULE_NAME c_api
+#define NGS_LIB_MODULE_NAME LASER_PCIE_NS::c_api
 #include "NGS/lib/module.h"
 
 NGS_LIB_MODULE_BEGIN

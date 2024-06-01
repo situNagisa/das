@@ -9,7 +9,7 @@ inline struct _runtime_image
 	NGS_PP_INJECT_BEGIN(_runtime_image);
 public:
 	bool recording = false;
-	::pcie6920::atomic::info pcie_config;
+	::laser::pcie6920::atomic::info pcie_config;
 
 	//float fiber_length;
 	//combo_list data_source;

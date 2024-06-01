@@ -2,7 +2,7 @@
 
 #include "./defined.h"
 
-#define NGS_LIB_MODULE_NAME enums
+#define NGS_LIB_MODULE_NAME LASER_PCIE_NS::enums
 #include "NGS/lib/module.h"
 
 NGS_LIB_MODULE_BEGIN

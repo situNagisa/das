@@ -35,25 +35,45 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\pcie6920\atomic.h" />
-    <ClInclude Include="include\pcie6920\atomic\config.h" />
-    <ClInclude Include="include\pcie6920\atomic\info.h" />
-    <ClInclude Include="include\pcie6920\atomic\defined.h" />
-    <ClInclude Include="include\pcie6920\atomic\io.h" />
-    <ClInclude Include="include\pcie6920\atomic\packet.h" />
-    <ClInclude Include="include\pcie6920\atomic\point.h" />
-    <ClInclude Include="include\pcie6920\atomic\unit.h" />
-    <ClInclude Include="include\pcie6920\c.h" />
-    <ClInclude Include="include\pcie6920\defined.h" />
-    <ClInclude Include="include\pcie6920\enum.h" />
-    <ClInclude Include="include\pcie6920\guard.h" />
-    <ClInclude Include="include\pcie6920\guard\defined.h" />
-    <ClInclude Include="include\pcie6920\guard\open.h" />
-    <ClInclude Include="include\pcie6920\guard\io.h" />
-    <ClInclude Include="include\pcie6920\pcie6920.h" />
+    <ClInclude Include="include\laser\config.h" />
+    <ClInclude Include="include\laser\defined.h" />
+    <ClInclude Include="include\laser\mic\algorithm.h" />
+    <ClInclude Include="include\laser\mic\algorithm\defined.h" />
+    <ClInclude Include="include\laser\mic\algorithm\receive.h" />
+    <ClInclude Include="include\laser\mic\algorithm\send.h" />
+    <ClInclude Include="include\laser\mic\defined.h" />
+    <ClInclude Include="include\laser\mic\protocol.h" />
+    <ClInclude Include="include\laser\mic\protocol\address.h" />
+    <ClInclude Include="include\laser\mic\protocol\command.h" />
+    <ClInclude Include="include\laser\mic\protocol\defined.h" />
+    <ClInclude Include="include\laser\mic\protocol\flag.h" />
+    <ClInclude Include="include\laser\mic\protocol\length.h" />
+    <ClInclude Include="include\laser\mic\protocol\response.h" />
+    <ClInclude Include="include\laser\mic\protocol\sum.h" />
+    <ClInclude Include="include\laser\undefined.h" />
+    <ClInclude Include="include\laser\laser.h" />
+    <ClInclude Include="include\laser\laser.hpp" />
+    <ClInclude Include="include\laser\pcie6920.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\config.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\info.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\defined.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\io.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\packet.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\point.h" />
+    <ClInclude Include="include\laser\pcie6920\atomic\unit.h" />
+    <ClInclude Include="include\laser\pcie6920\c.h" />
+    <ClInclude Include="include\laser\pcie6920\c.hpp" />
+    <ClInclude Include="include\laser\pcie6920\defined.h" />
+    <ClInclude Include="include\laser\pcie6920\enum.h" />
+    <ClInclude Include="include\laser\pcie6920\guard.h" />
+    <ClInclude Include="include\laser\pcie6920\guard\defined.h" />
+    <ClInclude Include="include\laser\pcie6920\guard\open.h" />
+    <ClInclude Include="include\laser\pcie6920\guard\io.h" />
+    <ClInclude Include="include\laser\pcie6920.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\pcie6920_api.cpp" />
+    <ClCompile Include="source\laser.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -61,7 +81,7 @@
     <ProjectGuid>{1690dcb3-0ca1-4a26-ac2f-fa0fee8ed789}</ProjectGuid>
     <RootNamespace>pcie6920</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>pcie6920</ProjectName>
+    <ProjectName>laser</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -178,7 +198,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LASER_CONFIG_ENABLE_VISUAL_PCIE;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -208,7 +228,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LASER_CONFIG_ENABLE_VISUAL_PCIE;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -234,7 +254,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LASER_CONFIG_ENABLE_VISUAL_PCIE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -264,7 +284,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LASER_CONFIG_ENABLE_VISUAL_PCIE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>

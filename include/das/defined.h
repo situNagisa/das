@@ -1,7 +1,8 @@
 #pragma once
 
-#define NGS_USE_HPP
+#include <boost/asio.hpp>
 
+#define NGS_USE_HPP
 #include "NGS/basic/basic.h"
 #include "NGS/external/glfw.h"
 
@@ -12,7 +13,8 @@
 
 #include "implot.h"
 
-#include "pcie6920/pcie6920.h"
+//#define LASER_CONFIG_USE_HPP
+#include "laser/laser.h"
 
 #define NGS_LIB_GLOBAL_BEGIN
 #define NGS_LIB_GLOBAL_END

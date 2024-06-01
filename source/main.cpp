@@ -1,13 +1,13 @@
 ﻿#include "./das/das.h"
 
-using packet_type = ::pcie6920::atomic::packet<pcie6920::enums::parse_rule::raw_data, pcie6920::enums::channel_quantity::_1>;
+using packet_type = ::laser::pcie6920::atomic::packet<laser::pcie6920::enums::parse_rule::raw_data, laser::pcie6920::enums::channel_quantity::_1>;
 
 
 auto start(::das::ui::line_storage& channel0, ::das::ui::line_storage& channel1,::std::size_t time, ::std::span<packet_type> read_buffer)
 {
-	if (::das::runtime::data.pcie_config.data_source_sel == pcie6920::enums::parse_rule::raw_data)
+	if (::das::runtime::data.pcie_config.data_source_sel == laser::pcie6920::enums::parse_rule::raw_data)
 	{
-		auto buffer = ::pcie6920::atomic::unpack(read_buffer);
+		auto buffer = ::laser::pcie6920::atomic::unpack(read_buffer);
 		auto push = [time](::das::ui::line_storage& line, decltype(buffer) buffer, ::std::size_t channel_index)
 			{
 				auto push_size = ::std::min(::das::das_config::limit_point, ::std::ranges::size(buffer));
@@ -130,6 +130,37 @@ void render_ui()
 	*/
 }
 
+void mic_test()
+{
+	namespace asio = ::boost::asio;
+
+	try
+	{
+		asio::io_service io{};
+		asio::serial_port sp(io, "COM1");
+
+		sp.set_option(asio::serial_port::baud_rate(115200));
+		sp.set_option(asio::serial_port::character_size(8)); //数据位为8
+		sp.set_option(asio::serial_port::parity(asio::serial_port::parity::none)); //无奇偶校验
+		sp.set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one)); //一位停止位
+		sp.set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none)); //无流控制
+
+		::std::uint8_t send_buffer[] = { 0xef, 0xef, 0xff, 0x00, 0x00, 0x00 };
+		(*::std::ranges::rbegin(send_buffer)) = std::ranges::fold_left(send_buffer, 0, std::plus<>());
+		sp.write_some(asio::buffer(send_buffer));
+		::std::array<::std::uint8_t, 64> receive_buffer{};
+
+		auto length = sp.read_some(asio::buffer(receive_buffer));
+
+		NGS_LOGL(info, ::std::format("length:{}", length));
+	}
+	catch(::std::exception& e)
+	{
+		NGS_LOGL(error, e.what());
+	}
+
+}
+
 // Main code
 int main(int, char**)
 {
@@ -170,22 +201,24 @@ int main(int, char**)
 	::das::ui::line_storage channel1_line_data{};
 
 	::das::runtime::data.pcie_config = {
-		.demodulation_channel_quantity = ::pcie6920::enums::channel_quantity::_1,
+		.demodulation_channel_quantity = ::laser::pcie6920::enums::channel_quantity::_1,
 		.packets_per_scan = 64,
 		.scan_rate = 2000,
 		.trigger_pulse_width = 4,
 		.center_frequency = 80000000,
-		.data_source_sel = ::pcie6920::enums::parse_rule::raw_data,
-		.upload_rate_sel = ::pcie6920::enums::upload_rate::_250m
+		.data_source_sel = ::laser::pcie6920::enums::parse_rule::raw_data,
+		.upload_rate_sel = ::laser::pcie6920::enums::upload_rate::_250m
 	};
 	
-	::pcie6920::guard::open pcie{};
-	::pcie6920::atomic::config(::das::runtime::data.pcie_config);
+	::laser::pcie6920::guard::open pcie{};
+	::laser::pcie6920::atomic::config(::das::runtime::data.pcie_config);
 
 	::std::vector<packet_type> read_buffer{};
 	::std::size_t read_buffer_index{};
 	::std::size_t time = 0;
 
+
+	mic_test();
 	while (!gui.window().is_should_close())
 	{
 		auto render_guard = gui.render_guard();
@@ -228,7 +261,7 @@ int main(int, char**)
 					{
 						if (ImGui::Button("config", { width , 0 }))
 						{
-							::pcie6920::atomic::config(::das::runtime::data.pcie_config);
+							::laser::pcie6920::atomic::config(::das::runtime::data.pcie_config);
 						}
 						{
 							int packets_per_scan = static_cast<int>(runtime::data.pcie_config.packets_per_scan);
