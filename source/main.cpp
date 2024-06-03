@@ -137,22 +137,25 @@ void mic_test()
 	try
 	{
 		asio::io_service io{};
-		asio::serial_port sp(io, "COM1");
+		asio::serial_port sp(io, "COM7");
 
-		sp.set_option(asio::serial_port::baud_rate(115200));
+		sp.set_option(asio::serial_port::baud_rate(9600));
 		sp.set_option(asio::serial_port::character_size(8)); //数据位为8
 		sp.set_option(asio::serial_port::parity(asio::serial_port::parity::none)); //无奇偶校验
 		sp.set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one)); //一位停止位
 		sp.set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none)); //无流控制
 
-		::std::uint8_t send_buffer[] = { 0xef, 0xef, 0xff, 0x00, 0x00, 0x00 };
-		(*::std::ranges::rbegin(send_buffer)) = std::ranges::fold_left(send_buffer, 0, std::plus<>());
+		::std::uint8_t send_buffer[] = { 0xef, 0xef, 0x04, 0xff, 0x00, 0x00, 0xdd };
+		(*::std::ranges::rbegin(send_buffer)) = ::std::ranges::fold_left(send_buffer, static_cast<::std::uint8_t>(0), std::plus<::std::uint8_t>());
 		sp.write_some(asio::buffer(send_buffer));
 		::std::array<::std::uint8_t, 64> receive_buffer{};
 
-		auto length = sp.read_some(asio::buffer(receive_buffer));
+		sp.async_read_some(asio::buffer(receive_buffer), [](const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
+			{
+				NGS_LOGL(info, ::std::format("error {}, length:{}", error.what(), bytes_transferred));
+			});
 
-		NGS_LOGL(info, ::std::format("length:{}", length));
+		io.run();
 	}
 	catch(::std::exception& e)
 	{
