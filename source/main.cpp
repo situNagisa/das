@@ -136,6 +136,8 @@ void mic_test()
 
 	try
 	{
+		constexpr ::std::uint8_t send_buffer[] = { 0xef, 0xef, 0x04, 0xff, 0x00, 0x00, 0xe1 };
+
 		asio::io_service io{};
 		asio::serial_port sp(io, "COM7");
 
@@ -145,14 +147,19 @@ void mic_test()
 		sp.set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one)); //一位停止位
 		sp.set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none)); //无流控制
 
-		::std::uint8_t send_buffer[] = { 0xef, 0xef, 0x04, 0xff, 0x00, 0x00, 0xdd };
-		(*::std::ranges::rbegin(send_buffer)) = ::std::ranges::fold_left(send_buffer, static_cast<::std::uint8_t>(0), std::plus<::std::uint8_t>());
+		
 		sp.write_some(asio::buffer(send_buffer));
 		::std::array<::std::uint8_t, 64> receive_buffer{};
 
-		sp.async_read_some(asio::buffer(receive_buffer), [](const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
+		sp.async_read_some(asio::buffer(receive_buffer), [&receive_buffer](const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
 			{
-				NGS_LOGL(info, ::std::format("error {}, length:{}", error.what(), bytes_transferred));
+				if(!error)
+				{
+					NGS_LOGL(error, error.message());
+					return;
+				}
+				NGS_LOGL(info, ::std::format("length:{}", bytes_transferred));
+				::std::ranges::copy(receive_buffer | ::std::views::take(bytes_transferred) | ::std::views::transform([](auto&& value) { return ::std::format("{:02x} ", value); }), ::std::ostream_iterator<::std::string>(::std::cout, ""));
 			});
 
 		io.run();

@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package mic_protocol;
+
+message mic_sender {
+  optional uint32 flag = 1;
+  optional int32 id = 2;
+  optional string email = 3;
+}
