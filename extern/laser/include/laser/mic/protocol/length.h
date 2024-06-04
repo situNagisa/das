@@ -6,15 +6,13 @@ NGS_LIB_MODULE_BEGIN
 
 struct length
 {
-	enum type : ::std::uint8_t {};
+	constexpr static auto max() { return ::std::numeric_limits<::std::uint8_t>::max(); }
 
-	constexpr static auto max() { return sizeof(type); }
-
-	constexpr explicit(false) length(type value) : _value(value) {}
+	constexpr explicit(false) length(::std::uint8_t value) : _value(value) {}
 
 	constexpr auto&& value() const { return _value; }
 
-	type _value;
+	::std::uint8_t _value;
 };
 
 NGS_LIB_MODULE_END

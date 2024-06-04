@@ -156,7 +156,10 @@ void mic_test()
 		sp.set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none)); //无流控制
 
 		{
-			constexpr ::std::uint8_t send_buffer[] = { 0xef, 0xef, 0x03, 0xff, 0x00, 0xe0 };
+			::std::array<::std::uint8_t, 0x100> send_buffer{};
+
+			::laser::mic::algorithm::send(::laser::mic::protocols::command::read_all_parameters, send_buffer.begin());
+
 			auto length = sp.write_some(asio::buffer(send_buffer));
 			NGS_LOGL(info, ::std::format("send length:{}, {}", length, ::to_string(send_buffer, "{:02x} ")));
 		}

@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClInclude Include="include\laser\config.h" />
     <ClInclude Include="include\laser\defined.h" />
+    <ClInclude Include="include\laser\mic.h" />
     <ClInclude Include="include\laser\mic\algorithm.h" />
     <ClInclude Include="include\laser\mic\algorithm\defined.h" />
     <ClInclude Include="include\laser\mic\algorithm\receive.h" />
