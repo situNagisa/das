@@ -133,7 +133,7 @@ void render_ui()
 constexpr auto to_string(::std::ranges::range auto&& range, ::std::string_view formatter)
 {
 	::std::string result{};
-	for (auto&& value : range | ::std::views::transform([formatter](auto&& value) { return ::std::format(formatter, NGS_PP_PERFECT_FORWARD(value)); }))
+	for (auto&& value : range | ::std::views::transform([formatter](auto&& value) { return ::std::vformat(formatter, ::std::make_format_args(NGS_PP_PERFECT_FORWARD(value))); }))
 	{
 		result += value;
 	}
