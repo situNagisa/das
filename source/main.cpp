@@ -26,7 +26,7 @@ void mic_test()
 		sp.set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none)); //无流控制
 
 		{
-			::std::array<::std::uint8_t, 0x100> send_buffer{};
+			::std::vector<::std::uint8_t> send_buffer(::laser::mic::algorithm::send_size(0));
 
 			auto result = ::laser::mic::algorithm::send(::laser::mic::protocols::command::read_all_parameters, send_buffer.begin());
 
@@ -45,7 +45,11 @@ void mic_test()
 					return;
 				}
 				NGS_LOGL(info, ::std::format("receive length:{}, {}", bytes_transferred, ::to_string(receive_buffer | ::std::views::take(bytes_transferred), "{:02x} ")));
-				NGS_LOGL(info, ::std::format("data {}", ::to_string(::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, receive_buffer | ::std::views::take(bytes_transferred)), "{:02x} ")));
+				auto data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, receive_buffer | ::std::views::take(bytes_transferred));
+				NGS_LOGL(info, ::std::format("data {}", ::to_string(data, "{:02x} ")));
+
+				NGS_ASSERT(::std::ranges::size(data) == sizeof(::laser::mic::algorithm::all_parameter));
+				auto all_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
 			});
 
 		io.run();
@@ -61,17 +65,6 @@ void mic_test()
 int main(int, char**)
 {
 	using namespace ::std::chrono_literals;
-
-	constexpr ::std::uint8_t data[] = {
-		0xed, 0xfa,
-		0x39,
-		0xff,
-		0x00,
-		0xf3, 0x1e, 0x12, 0x00, 0x00, 0x00, 0x01, 0x90, 0x02, 0x1a, 0x01, 0xcf, 0x03, 0xbf, 0x00, 0x64, 0x03, 0xcf, 0x1e, 0xda, 0x00, 0x00, 0x00, 0xfa, 0x4b, 0xf5, 0x1e, 0x03, 0x00, 0x00, 0x00, 0xf8, 0x4c, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x07,
-	};
-
-	auto receive_data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, data);
 
 	::das::application app{};
 

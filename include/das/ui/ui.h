@@ -78,7 +78,7 @@ struct plot
 	{
 		ImGui::SetNextWindowPos({ 376,17 }, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize({ 916,620 }, ImGuiCond_FirstUseEver);
-		if (ImGui::Begin(_title.data(), nullptr, das_config::imgui_window_flag))
+		if (ImGui::Begin(_title.data(), nullptr, das_config::imgui_window_flag | ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			for (auto&& [title, width, height, lines] : _graphs)
 			{

@@ -26,10 +26,13 @@ struct das_config
 	constexpr static ::std::pair<::std::size_t, ::std::size_t> window_size = { DAS_CONFIG_WINDOW_SIZE_WIDTH , DAS_CONFIG_WINDOW_SIZE_HEIGHT };
 	constexpr static auto imgui_window_flag =
 		ImGuiWindowFlags_NoTitleBar
-#if !defined(NGS_BUILD_TYPE_IS_DEBUG)
-		//	| ImGuiWindowFlags_NoMove
+#if defined(NGS_BUILD_TYPE_IS_DEBUG)
+
+#else
+		| ImGuiWindowFlags_NoMove
+		| ImGuiWindowFlags_NoResize
 #endif
-		| ImGuiWindowFlags_AlwaysAutoResize
+//		| ImGuiWindowFlags_AlwaysAutoResize
 		| ImGuiWindowFlags_NoBackground
 		;
 	constexpr static struct

@@ -25,7 +25,7 @@ enum class command : ::std::uint8_t
 	read_power = 0x20,
 	read_gain,
 
-	read_working = 0x30,
+	read_working_mode = 0x30,
 
 	set_working_mode = 0x40,
 	set_input_power_alarm_threshold,

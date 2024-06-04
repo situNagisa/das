@@ -15,6 +15,7 @@ struct context
 	::std::size_t time;
 	::boost::asio::io_service io{};
 	::std::unique_ptr<::boost::asio::serial_port> serial_port = nullptr;
+	::laser::mic::algorithm::all_parameter edfa_parameter;
 
 	context(::std::string_view plot_title)
 		: plot(plot_title)

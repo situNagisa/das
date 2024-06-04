@@ -40,6 +40,7 @@
     <ClInclude Include="include\laser\mic.h" />
     <ClInclude Include="include\laser\mic\algorithm.h" />
     <ClInclude Include="include\laser\mic\algorithm\defined.h" />
+    <ClInclude Include="include\laser\mic\algorithm\parse.h" />
     <ClInclude Include="include\laser\mic\algorithm\receive.h" />
     <ClInclude Include="include\laser\mic\algorithm\send.h" />
     <ClInclude Include="include\laser\mic\defined.h" />
