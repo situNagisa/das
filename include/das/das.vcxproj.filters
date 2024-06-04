@@ -12,11 +12,10 @@
     <ClInclude Include="das.h" />
     <ClInclude Include="runtime.h" />
     <ClInclude Include="ui.h" />
+    <ClInclude Include="context.h" />
+    <ClInclude Include="application.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="imgui.ini" />
   </ItemGroup>
 </Project>

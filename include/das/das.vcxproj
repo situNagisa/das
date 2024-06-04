@@ -285,7 +285,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="application.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="context.h" />
     <ClInclude Include="das.h" />
     <ClInclude Include="defined.h" />
     <ClInclude Include="runtime.h" />
@@ -299,9 +301,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="imgui.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

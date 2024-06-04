@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../runtime.h"
 #include "../config.h"
 #include "./defined.h"
 
@@ -46,6 +45,12 @@ struct line
 	{
 		independent_variable = storage.independent_variable;
 		depend_variable = storage.depend_variable;
+	}
+
+	void clear()
+	{
+		independent_variable = {};
+		depend_variable = {};
 	}
 };
 
