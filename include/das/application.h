@@ -189,10 +189,10 @@ struct application
 
 				::ImGui::InputText("device", _context.runtime.uart.device.data(), _context.runtime.uart.device.size());
 				::ImGui::Combo("baud rate", &baud_rate, baud_rates_item.data(), baud_rates.size());
-				::ImGui::DragInt("character size", &character_size, 1, 5, 8, "%d");
-				::ImGui::Combo("parity", &parity, parities_item.data(), parities.size());
-				::ImGui::Combo("stop bits", &stop_bits_index, stop_bits_item.data(), stop_bits.size());
-				::ImGui::Combo("flow control", &flow_control, flow_controls_item.data(), flow_controls.size());
+				//::ImGui::DragInt("character size", &character_size, 1, 5, 8, "%d");
+				//::ImGui::Combo("parity", &parity, parities_item.data(), parities.size());
+				//::ImGui::Combo("stop bits", &stop_bits_index, stop_bits_item.data(), stop_bits.size());
+				//::ImGui::Combo("flow control", &flow_control, flow_controls_item.data(), flow_controls.size());
 
 				_context.runtime.uart.baud_rate = ::boost::asio::serial_port_base::baud_rate(baud_rates[baud_rate]);
 				_context.runtime.uart.character_size = static_cast<::boost::asio::serial_port_base::character_size>(character_size);
@@ -233,9 +233,9 @@ struct application
 						_open_message = "fail!";
 					}
 				}
-				::ImGui::SameLine();
-				::ImGui::Text(_open_message.data());
 			}
+			::ImGui::SameLine();
+			::ImGui::Text(_open_message.data());
 
 			::ImGui::PopItemWidth();
 			::ImGui::End();

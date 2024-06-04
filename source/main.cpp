@@ -44,6 +44,7 @@ void mic_test()
 					return;
 				}
 				NGS_LOGL(info, ::std::format("receive length:{}, {}", bytes_transferred, ::to_string(receive_buffer | ::std::views::take(bytes_transferred), "{:02x} ")));
+				NGS_LOGL(info, ::std::format("data {}", ::to_string(::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, receive_buffer | ::std::views::take(bytes_transferred)), "{:02x} ")));
 			});
 
 		io.run();
@@ -62,6 +63,7 @@ int main(int, char**)
 
 	::das::application app{};
 
+	mic_test();
 	app.run();
 
 	return 0;

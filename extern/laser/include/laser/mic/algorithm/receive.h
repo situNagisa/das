@@ -5,47 +5,60 @@
 
 NGS_LIB_MODULE_BEGIN
 
-auto receive()
+constexpr ::std::size_t receive_size(::std::size_t data_size)
 {
-	auto flag = protocols::flag(protocols::flag::receive);
-	auto length = protocols::length();
-	auto address = protocols::address();
-	auto response = protocols::response();
-	auto data = ::std::vector<::std::uint8_t>();
-	auto checksum = protocols::checksum();
-
-	return {address, response, data};
+	return sizeof(protocols::flag) + sizeof(protocols::length) + sizeof(protocols::address) + sizeof(protocols::response) + data_size + sizeof(protocols::checksum);
 }
 
-auto receive(protocols::address address, protocols::response response, ::std::ranges::input_range auto&& data, ::std::output_iterator<::std::uint8_t> auto&& result)
-	requires ::std::convertible_to<::std::ranges::range_value_t<decltype(data)>, uint8_t>&& ::std::indirectly_copyable<::std::ranges::range_value_t<decltype(data)>, decltype(result)>
+
+::std::span<const ::std::uint8_t> receive_check(protocols::command command, ::std::ranges::contiguous_range auto&& data)
+	requires ::ngs::cpt::object_same_as<::std::ranges::range_value_t<decltype(data)>, uint8_t>
 {
-	constexpr auto flag = protocols::flag(protocols::flag::send);
-	NGS_ASSERT(
-		(::std::ranges::size(data) + sizeof(protocols::address) + sizeof(protocols::command) + sizeof(protocols::checksum)) < protocols::length::max(),
-		::std::format("data size is too large: {}", ::std::ranges::size(data))
-	);
-	auto length = protocols::length(static_cast<::std::uint8_t>(::std::ranges::size(data) + sizeof(protocols::address) + sizeof(protocols::response) + sizeof(protocols::checksum)));
-	auto checksum = protocols::checksum(protocols::flag::send, length, address, response);
-
-	auto flag_value = ::std::array<::std::uint8_t, sizeof(decltype(flag.value()))>{flag.value() & 0xff, (flag.value() >> 8) & 0xff};
-	result = ::std::ranges::copy(flag_value, result);
-
-	*result = length.value();
-	++result;
-
-	*result = address.value();
-	++result;
-
-	*result = response.value();
-	++result;
-
-	result = ::std::ranges::copy(data, result);
-
-	*result = checksum.value();
-	++result;
-
-	return result;
+	NGS_ASSERT(::std::ranges::size(data) >= NGS_LIB_MODULE_NAME::receive_size(0), ::std::format("data size is too small: {}", ::std::ranges::size(data)));
+	auto result = ::std::ranges::begin(data);
+	::std::array<::std::uint8_t, sizeof(protocols::flag)> flag_bytes{};
+	{
+		result = ::std::ranges::copy_n(::std::ranges::begin(data), sizeof(protocols::flag), flag_bytes.begin()).in;
+		if(static_cast<protocols::flag::type>(static_cast<::std::uint16_t>(flag_bytes[1] << 8) & flag_bytes[0]) != protocols::flag::receive)
+		{
+			return {};
+		}
+	}
+	::std::uint8_t length{};
+	{
+		result = ::std::ranges::copy_n(result, sizeof(protocols::length), &length).in;
+		if(length != ::std::ranges::distance(result, ::std::ranges::end(data)))
+		{
+			return {};
+		}
+	}
+	::std::uint8_t address{};
+	{
+		result = ::std::ranges::copy_n(result, sizeof(protocols::address), &address).in;
+	}
+	::std::uint8_t response{};
+	{
+		result = ::std::ranges::copy_n(result, sizeof(protocols::response), &response).in;
+		if (protocols::response(response) == protocols::response::error || response != static_cast<::std::uint8_t>(command))
+		{
+			return {};
+		}
+	}
+	::std::span<const ::std::uint8_t> result_data{};
+	{
+		auto data_size = length - sizeof(protocols::address) - sizeof(protocols::response) - sizeof(protocols::checksum);
+		result_data = { ::std::ranges::data(data) + ::std::ranges::distance(::std::ranges::begin(data), result), data_size};
+		result = ::std::ranges::next(result, data_size);
+	}
+	{
+		::std::uint8_t checksum{};
+		result = ::std::ranges::copy_n(result, sizeof(protocols::checksum), &checksum).in;
+		if (checksum != (flag_bytes[0] + flag_bytes[1] + length + address + response + ::std::ranges::fold_left(result_data, static_cast<::std::uint8_t>(0), ::std::plus{})))
+		{
+			return {};
+		}
+	}
+	return result_data;
 }
 
 NGS_LIB_MODULE_END
