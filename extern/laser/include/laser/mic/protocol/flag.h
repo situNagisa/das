@@ -9,7 +9,7 @@ struct flag
 	enum type : ::std::uint16_t
 	{
 		send = 0xefef,
-		receive = 0xedfa,
+		receive = 0xfaed,
 	};
 
 	constexpr explicit(false) flag(type value) : _value(value) {}

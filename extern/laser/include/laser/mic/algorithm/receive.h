@@ -11,15 +11,15 @@ constexpr ::std::size_t receive_size(::std::size_t data_size)
 }
 
 
-::std::span<const ::std::uint8_t> receive_check(protocols::command command, ::std::ranges::contiguous_range auto&& data)
+constexpr ::std::span<const ::std::uint8_t> receive_check(protocols::command command, ::std::ranges::contiguous_range auto&& data)
 	requires ::ngs::cpt::object_same_as<::std::ranges::range_value_t<decltype(data)>, uint8_t>
 {
-	NGS_ASSERT(::std::ranges::size(data) >= NGS_LIB_MODULE_NAME::receive_size(0), ::std::format("data size is too small: {}", ::std::ranges::size(data)));
+	NGS_ASSERT_IF_CONSTEVAL(::std::ranges::size(data) >= NGS_LIB_MODULE_NAME::receive_size(0), ::std::format("data size is too small: {}", ::std::ranges::size(data)));
 	auto result = ::std::ranges::begin(data);
 	::std::array<::std::uint8_t, sizeof(protocols::flag)> flag_bytes{};
 	{
 		result = ::std::ranges::copy_n(::std::ranges::begin(data), sizeof(protocols::flag), flag_bytes.begin()).in;
-		if(static_cast<protocols::flag::type>(static_cast<::std::uint16_t>(flag_bytes[1] << 8) & flag_bytes[0]) != protocols::flag::receive)
+		if(((static_cast<::std::uint16_t>(flag_bytes[1]) << 8) | flag_bytes[0]) != static_cast<::std::uint16_t>(protocols::flag::receive))
 		{
 			return {};
 		}
@@ -53,7 +53,7 @@ constexpr ::std::size_t receive_size(::std::size_t data_size)
 	{
 		::std::uint8_t checksum{};
 		result = ::std::ranges::copy_n(result, sizeof(protocols::checksum), &checksum).in;
-		if (checksum != (flag_bytes[0] + flag_bytes[1] + length + address + response + ::std::ranges::fold_left(result_data, static_cast<::std::uint8_t>(0), ::std::plus{})))
+		if (checksum != static_cast<::std::uint8_t>(flag_bytes[0] + flag_bytes[1] + length + address + response + ::std::ranges::fold_left(result_data, static_cast<::std::uint8_t>(0), ::std::plus{})))
 		{
 			return {};
 		}

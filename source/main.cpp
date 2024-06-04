@@ -28,10 +28,11 @@ void mic_test()
 		{
 			::std::array<::std::uint8_t, 0x100> send_buffer{};
 
-			::laser::mic::algorithm::send(::laser::mic::protocols::command::read_all_parameters, send_buffer.begin());
+			auto result = ::laser::mic::algorithm::send(::laser::mic::protocols::command::read_all_parameters, send_buffer.begin());
 
 			auto length = sp.write_some(asio::buffer(send_buffer));
-			NGS_LOGL(info, ::std::format("send length:{}, {}", length, ::to_string(send_buffer, "{:02x} ")));
+			NGS_EXPECT(::std::ranges::distance(send_buffer.begin(), result) == length);
+			NGS_LOGL(info, ::std::format("send length:{}, {}", length, ::to_string(send_buffer | ::std::views::take(length), "{:02x} ")));
 		}
 		
 		::std::array<::std::uint8_t, 64> receive_buffer{};
@@ -60,6 +61,17 @@ void mic_test()
 int main(int, char**)
 {
 	using namespace ::std::chrono_literals;
+
+	constexpr ::std::uint8_t data[] = {
+		0xed, 0xfa,
+		0x39,
+		0xff,
+		0x00,
+		0xf3, 0x1e, 0x12, 0x00, 0x00, 0x00, 0x01, 0x90, 0x02, 0x1a, 0x01, 0xcf, 0x03, 0xbf, 0x00, 0x64, 0x03, 0xcf, 0x1e, 0xda, 0x00, 0x00, 0x00, 0xfa, 0x4b, 0xf5, 0x1e, 0x03, 0x00, 0x00, 0x00, 0xf8, 0x4c, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x07,
+	};
+
+	auto receive_data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, data);
 
 	::das::application app{};
 
