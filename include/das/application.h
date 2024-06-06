@@ -36,6 +36,28 @@ struct application
 			});
 
 		::laser::pcie6920::atomic::config(_context.runtime.pcie_config);
+
+		::std::thread([this]
+			{
+				while(!_done)
+				{
+					try
+					{
+						auto bytes_transferred = _context.udp_socket.receive_from(::boost::asio::buffer(_udp_receive_buffer), _udp_sender_endpoint);
+						_udp_receive_buffer_span = _udp_receive_buffer | ::std::views::take(bytes_transferred);
+						NGS_LOGL(info, ::std::format("{}:{} transferred {} {}", _udp_sender_endpoint.address().to_string(), _udp_sender_endpoint.port(), bytes_transferred, ::std::string_view{ _udp_receive_buffer.data(), bytes_transferred }));
+					}
+					catch (const ::boost::system::system_error& error)
+					{
+						NGS_LOGL(error, error.what());
+					}
+				}
+				NGS_LOGL(info, "bye bye~");
+			}).detach();
+	}
+	~application()
+	{
+		_done = true;
 	}
 
 	auto&& channel0_line_data() { return _context.plot.graph()[0].lines["channel"]; }
@@ -132,6 +154,7 @@ struct application
 
 						NGS_ASSERT(::std::ranges::size(data) == sizeof(::laser::mic::algorithm::all_parameter));
 						_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
+						NGS_LOGL(debug, "serial port read length %d", bytes_transferred);
 					});
 			}
 		}
@@ -278,6 +301,7 @@ struct application
 			::ImGui::PopItemWidth();
 			::ImGui::End();
 		}
+
 		::ImGui::SetNextWindowPos({ 18, 295 }, ImGuiCond_FirstUseEver);
 		::ImGui::SetNextWindowSize({ 326,326 }, ImGuiCond_FirstUseEver);
 		if (::ImGui::Begin("edfa config", nullptr, das_config::imgui_window_flag))
@@ -288,54 +312,70 @@ struct application
 			{
 				if (::ImGui::BeginTabItem("alarm"))
 				{
-					::ImGui::Text("temperature: %s", _context.edfa_parameter.alarm_temperature ? "true" : "false");
-					::ImGui::Text("output power: %s", _context.edfa_parameter.alarm_output_power ? "true" : "false");
-					::ImGui::Text("input power: %s", _context.edfa_parameter.alarm_input_power ? "true" : "false");
+					constexpr auto yes = "alarm!";
+					constexpr auto no = "normal";
+
+					::ImGui::Text("temperature: %s", _context.edfa_parameter.alarm_temperature ? yes : no);
+					::ImGui::Text("output power: %s", _context.edfa_parameter.alarm_output_power ? yes : no);
+					::ImGui::Text("input power: %s", _context.edfa_parameter.alarm_input_power ? yes : no);
 					::ImGui::Text("pump status: %s", _context.edfa_parameter.alarm_pump_status ? "on" : "off");
 
 					::ImGui::SeparatorText("pump 1");
 
-					::ImGui::Text("cooler: %s", _context.edfa_parameter.alarm_pump_1_cooler ? " true" : "false");
-					::ImGui::Text("chip temperature: %s", _context.edfa_parameter.alarm_pump_1_chip_temperature ? " true" : "false");
-					::ImGui::Text("lop: %s", _context.edfa_parameter.alarm_pump_1_lop ? " true" : "false");
+					::ImGui::Text("cooler: %s", _context.edfa_parameter.alarm_pump_1_cooler ? yes : no);
+					::ImGui::Text("chip temperature: %s", _context.edfa_parameter.alarm_pump_1_chip_temperature ? yes : no);
+					::ImGui::Text("lop: %s", _context.edfa_parameter.alarm_pump_1_lop ? yes : no);
 
 					::ImGui::SeparatorText("pump 2");
 
-					::ImGui::Text("cooler: %s", _context.edfa_parameter.alarm_pump_2_cooler ? " true" : "false");
-					::ImGui::Text("chip temperature: %s", _context.edfa_parameter.alarm_pump_2_chip_temperature ? " true" : "false");
-					::ImGui::Text("lop: %s", _context.edfa_parameter.alarm_pump_2_lop ? " true" : "false");
+					::ImGui::Text("cooler: %s", _context.edfa_parameter.alarm_pump_2_cooler ? yes : no);
+					::ImGui::Text("chip temperature: %s", _context.edfa_parameter.alarm_pump_2_chip_temperature ? yes : no);
+					::ImGui::Text("lop: %s", _context.edfa_parameter.alarm_pump_2_lop ? yes : no);
 
 					::ImGui::EndTabItem();
 				}
 				if (::ImGui::BeginTabItem("pump"))
 				{
 					::ImGui::SeparatorText("pump 1");
-					::ImGui::Text("lop: %d", _context.edfa_parameter.pump_1_lop);
-					::ImGui::Text("power: %d", _context.edfa_parameter.pump_1_power);
-					::ImGui::Text("chip temperature: %d", _context.edfa_parameter.pump_1_chip_temperature);
-					::ImGui::Text("cooler: %d", _context.edfa_parameter.pump_1_cooler);
+					::ImGui::Text("lop: %.1f mA", _context.edfa_parameter.pump_1_lop / 10.0f);
+					::ImGui::Text("power: %.1f mW", _context.edfa_parameter.pump_1_power / 10.0f);
+					::ImGui::Text("chip temperature: %.1f *C", _context.edfa_parameter.pump_1_chip_temperature / 10.0f);
+					::ImGui::Text("cooler: %.1f mA", _context.edfa_parameter.pump_1_cooler / 10.0f - 1420);
 
 					::ImGui::SeparatorText("pump 2");
-					::ImGui::Text("lop: %d", _context.edfa_parameter.pump_2_lop);
-					::ImGui::Text("power: %d", _context.edfa_parameter.pump_2_power);
-					::ImGui::Text("chip temperature: %d", _context.edfa_parameter.pump_2_chip_temperature);
-					::ImGui::Text("cooler: %d", _context.edfa_parameter.pump_2_cooler);
+					::ImGui::Text("lop: %.1f mA", _context.edfa_parameter.pump_2_lop / 10.0f);
+					::ImGui::Text("power: %.1f mW", _context.edfa_parameter.pump_2_power / 10.0f);
+					::ImGui::Text("chip temperature: %.1f *C", _context.edfa_parameter.pump_2_chip_temperature / 10.0f);
+					::ImGui::Text("cooler: %.1f mA", _context.edfa_parameter.pump_2_cooler / 10.0f - 1420);
+
+					::ImGui::EndTabItem();
+				}
+				if (::ImGui::BeginTabItem("udp"))
+				{
+					::ImGui::Text(::std::format("message: {}", ::std::string_view{_udp_receive_buffer_span}).c_str());
 
 					::ImGui::EndTabItem();
 				}
 				if (::ImGui::BeginTabItem("other"))
 				{
-					::ImGui::Text("working mode: %d, %d", static_cast<int>(_context.edfa_parameter.working_mode), _context.edfa_parameter.working_parameter);
+					static const ::std::unordered_map<::laser::mic::algorithm::all_parameter::working_mode_type, ::std::string_view> working_mode
+					{
+						{::laser::mic::algorithm::all_parameter::working_mode_type::acc, "acc"},
+						{::laser::mic::algorithm::all_parameter::working_mode_type::agc, "agc"},
+						{::laser::mic::algorithm::all_parameter::working_mode_type::apc, "apc"},
+					};
+
+					::ImGui::Text("working mode: %s, %d", working_mode.at(_context.edfa_parameter.working_mode).data(), _context.edfa_parameter.working_parameter);
+					::ImGui::Text("temperature: %.1f *C", _context.edfa_parameter.temperature / 1.0f);
 
 					::ImGui::SeparatorText("optical power");
-					::ImGui::Text("input: %d", _context.edfa_parameter.input_power);
-					::ImGui::Text("output: %d", _context.edfa_parameter.output_power);
-					::ImGui::Text("input threshold: %d", _context.edfa_parameter.input_power_threshold);
-					::ImGui::Text("output threshold: %d", _context.edfa_parameter.output_power_threshold);
+					::ImGui::Text("input: %.1f dbm", _context.edfa_parameter.input_power / 10.0f - 70);
+					::ImGui::Text("output: %.1f dbm", _context.edfa_parameter.output_power / 10.0f - 70);
+					::ImGui::Text("input threshold: %.1f dbm", _context.edfa_parameter.input_power_threshold / 10.0f - 70);
+					::ImGui::Text("output threshold: %.1f dbm", _context.edfa_parameter.output_power_threshold / 10.0f - 70);
 
 					::ImGui::EndTabItem();
 				}
-
 				::ImGui::EndTabBar();
 			}
 
@@ -353,6 +393,10 @@ struct application
 	::das::ui::line_storage _channel1_line{};
 	::std::string_view _open_message = "";
 	::std::array<::std::uint8_t, 0x100> _receive_buffer{};
+	::std::array<char, 0x100> _udp_receive_buffer{};
+	::std::span<char> _udp_receive_buffer_span{};
+	::boost::asio::ip::udp::endpoint _udp_sender_endpoint;
+	::std::atomic_bool _done = false;
 };
 
 
