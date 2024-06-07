@@ -7,6 +7,8 @@ NGS_LIB_BEGIN
 
 struct application
 {
+	NGS_PP_INJECT_BEGIN(application);
+public:
 	using packet_type = ::laser::pcie6920::atomic::packet<::laser::pcie6920::enums::parse_rule::raw_data, ::laser::pcie6920::enums::channel_quantity::_1>;
 
 	application()
@@ -37,26 +39,15 @@ struct application
 
 		::laser::pcie6920::atomic::config(_context.runtime.pcie_config);
 
-		::std::thread([this]
-			{
-				while(!_done)
-				{
-					try
-					{
-						auto bytes_transferred = _context.udp_socket.receive_from(::boost::asio::buffer(_udp_receive_buffer), _udp_sender_endpoint);
-						_udp_receive_buffer_span = _udp_receive_buffer | ::std::views::take(bytes_transferred);
-						NGS_LOGL(info, ::std::format("{}:{} transferred {} {}", _udp_sender_endpoint.address().to_string(), _udp_sender_endpoint.port(), bytes_transferred, ::std::string_view{ _udp_receive_buffer.data(), bytes_transferred }));
-					}
-					catch (const ::boost::system::system_error& error)
-					{
-						NGS_LOGL(error, error.what());
-					}
-				}
-				NGS_LOGL(info, "bye bye~");
-			}).detach();
+		NGS_LOGL(info, "wait for udp connect");
+		while (!_context.udp_socket.is_open());
+		
+		_next_read_udp();
+		NGS_LOGL(info, "udp connected");
 	}
 	~application()
 	{
+		_context.io.stop();
 		_done = true;
 	}
 
@@ -104,6 +95,86 @@ struct application
 		}
 	}
 
+	void _next_write_uart()
+	{
+		_context.serial_port->async_write_some(::boost::asio::buffer(::laser::mic::commands::read_all_parameters()), ::boost::bind(&self_type::_write_uart_handler, this, ::boost::asio::placeholders::error, ::boost::asio::placeholders::bytes_transferred));
+	}
+
+	void _write_uart_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
+	{
+		constexpr auto send_buffer = ::laser::mic::commands::read_all_parameters();
+
+		NGS_EXPECT(bytes_transferred == ::std::ranges::size(send_buffer), ::std::format("send data not complete, need {}, transferred {}", ::std::ranges::size(send_buffer), bytes_transferred));
+
+		if (error)
+		{
+			NGS_LOGL(error, error.message());
+		}
+
+		if (_done || !_context.serial_port || !_context.serial_port->is_open())
+		{
+			NGS_LOGL(info, "bye bye~");
+			return;
+		}
+
+		_next_write_uart();
+	}
+
+	void _next_read_uart()
+	{
+		_context.serial_port->async_read_some(::boost::asio::buffer(_receive_buffer), ::boost::bind(&self_type::_read_uart_handler, this, ::boost::asio::placeholders::error, ::boost::asio::placeholders::bytes_transferred));
+	}
+
+	void _read_uart_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
+	{
+		auto data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, _receive_buffer | ::std::views::take(bytes_transferred));
+
+		if (error)
+		{
+			NGS_LOGL(error, error.message());
+			goto next_read;
+		}
+		if (::std::ranges::empty(data) || ::std::ranges::size(data) != sizeof(::laser::mic::algorithm::all_parameter))
+		{
+			NGS_LOGL(error, "receive data error");
+			goto next_read;
+		}
+		
+		_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
+	next_read:
+		if (_done || !_context.serial_port || !_context.serial_port->is_open())
+		{
+			NGS_LOGL(info, "bye bye~");
+			return;
+		}
+
+		_next_read_uart();
+	}
+
+	void _next_read_udp()
+	{
+		_context.udp_socket.async_receive_from(::boost::asio::buffer(_udp_receive_buffer), _udp_sender_endpoint, ::boost::bind(&self_type::_read_udp_handler, this, ::boost::asio::placeholders::error, ::boost::asio::placeholders::bytes_transferred));
+	}
+
+	void _read_udp_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
+	{
+		if (error)
+		{
+			NGS_LOGL(error, error.message());
+			goto next_read;
+		}
+		_udp_receive_buffer_span = _udp_receive_buffer | ::std::views::take(bytes_transferred);
+		NGS_LOGL(info, ::std::format("{}:{} transferred {} {}", _udp_sender_endpoint.address().to_string(), _udp_sender_endpoint.port(), bytes_transferred, ::std::string_view{ _udp_receive_buffer.data(), bytes_transferred }));
+	next_read:
+		if (_done || !_context.udp_socket.is_open())
+		{
+			NGS_LOGL(info, "bye bye~");
+			return;
+		}
+
+		_next_read_udp();
+	}
+
 	void _update()
 	{
 		if (_context.runtime.recording)
@@ -131,34 +202,14 @@ struct application
 			channel0_line_data().bind(_channel0_line);
 			channel1_line_data().bind(_channel1_line);
 		}
-
-		if(_context.runtime.uart.is_opened){
-			{
-				::std::vector<::std::uint8_t> send_buffer(::laser::mic::algorithm::send_size(0));
-
-				auto result = ::laser::mic::algorithm::send(::laser::mic::protocols::command::read_all_parameters, send_buffer.begin());
-
-				auto length = _context.serial_port->write_some(::boost::asio::buffer(send_buffer));
-				NGS_EXPECT(::std::ranges::distance(send_buffer.begin(), result) == length);
-			}
-			{
-				
-				_context.serial_port->async_read_some(::boost::asio::buffer(_receive_buffer), [this](const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
-					{
-						if (error)
-						{
-							NGS_LOGL(error, error.message());
-							return;
-						}
-						auto data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, _receive_buffer | ::std::views::take(bytes_transferred));
-
-						NGS_ASSERT(::std::ranges::size(data) == sizeof(::laser::mic::algorithm::all_parameter));
-						_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
-						NGS_LOGL(debug, "serial port read length %d", bytes_transferred);
-					});
-			}
+		try
+		{
+			_context.io.poll();
 		}
-		
+		catch (const ::boost::system::system_error& e)
+		{
+			NGS_LOGL(error, e.what());
+		}
 	}
 
 	void _render()
@@ -278,6 +329,9 @@ struct application
 									_context.serial_port->set_option(_context.runtime.uart.parity); //无奇偶校验
 									_context.serial_port->set_option(_context.runtime.uart.stop_bits); //一位停止位
 									_context.serial_port->set_option(_context.runtime.uart.flow_control); //无流控制
+
+									_next_write_uart();
+									_next_read_uart();
 
 									_context.runtime.uart.is_opened = true;
 									_open_message = "success";

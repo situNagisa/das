@@ -10,11 +10,11 @@ constexpr auto send_size(::std::size_t data_size = 0)
 	return sizeof(protocols::flag) + sizeof(protocols::length) + sizeof(protocols::address) + sizeof(protocols::command) + data_size + sizeof(protocols::checksum);
 }
 
-auto send(protocols::address address, protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result, ::std::ranges::input_range auto&& data)
+constexpr auto send(protocols::address address, protocols::command command, ::std::output_iterator<::std::uint8_t> auto result, ::std::ranges::input_range auto&& data)
 	requires ::std::convertible_to<::std::ranges::range_value_t<decltype(data)>, uint8_t>&& ::std::indirectly_copyable<::std::ranges::iterator_t<decltype(data)>,decltype(result)>
 {
 	constexpr auto flag = protocols::flag(protocols::flag::send);
-	NGS_ASSERT(
+	NGS_ASSERT_IF_CONSTEVAL(
 		(::std::ranges::size(data) + sizeof(protocols::address) + sizeof(protocols::command) + sizeof(protocols::checksum)) < protocols::length::max(),
 		::std::format("data size is too large: {}", ::std::ranges::size(data))
 	);
@@ -41,18 +41,18 @@ auto send(protocols::address address, protocols::command command, ::std::output_
 	return result;
 }
 
-auto send(protocols::address address, protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result)
+constexpr auto send(protocols::address address, protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result)
 {
 	return NGS_LIB_MODULE_NAME::send(address, command, NGS_PP_PERFECT_FORWARD(result), ::std::array<::std::uint8_t, 0>{});
 }
 
-auto send(protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result, ::std::ranges::input_range auto&& data)
+constexpr auto send(protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result, ::std::ranges::input_range auto&& data)
 	requires ::std::convertible_to<::std::ranges::range_value_t<decltype(data)>, uint8_t>&& ::std::indirectly_copyable<::std::ranges::range_value_t<decltype(data)>, decltype(result)>
 {
 	return NGS_LIB_MODULE_NAME::send(protocols::address::any, command, NGS_PP_PERFECT_FORWARD(result), NGS_PP_PERFECT_FORWARD(data));
 }
 
-auto send(protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result)
+constexpr auto send(protocols::command command, ::std::output_iterator<::std::uint8_t> auto&& result)
 {
 	return NGS_LIB_MODULE_NAME::send(protocols::address::any, command, NGS_PP_PERFECT_FORWARD(result), ::std::array<::std::uint8_t, 0>{});
 }

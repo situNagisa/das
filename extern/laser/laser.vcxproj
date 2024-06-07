@@ -43,6 +43,9 @@
     <ClInclude Include="include\laser\mic\algorithm\parse.h" />
     <ClInclude Include="include\laser\mic\algorithm\receive.h" />
     <ClInclude Include="include\laser\mic\algorithm\send.h" />
+    <ClInclude Include="include\laser\mic\command.h" />
+    <ClInclude Include="include\laser\mic\command\command_buffer.h" />
+    <ClInclude Include="include\laser\mic\command\defined.h" />
     <ClInclude Include="include\laser\mic\defined.h" />
     <ClInclude Include="include\laser\mic\protocol.h" />
     <ClInclude Include="include\laser\mic\protocol\address.h" />
@@ -52,7 +55,6 @@
     <ClInclude Include="include\laser\mic\protocol\length.h" />
     <ClInclude Include="include\laser\mic\protocol\response.h" />
     <ClInclude Include="include\laser\mic\protocol\sum.h" />
-    <ClInclude Include="include\laser\mic\proto\bg11.pb.h" />
     <ClInclude Include="include\laser\undefined.h" />
     <ClInclude Include="include\laser\laser.h" />
     <ClInclude Include="include\laser\laser.hpp" />
@@ -76,11 +78,7 @@
     <ClInclude Include="include\laser\pcie6920.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\laser\mic\proto\bg11.pb.cc" />
     <ClCompile Include="source\laser.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="include\laser\mic\proto\bg11.proto" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
