@@ -127,16 +127,26 @@ public:
 
 	void _read_uart_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
 	{
-		auto data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, _receive_buffer | ::std::views::take(bytes_transferred));
+		::std::span<const ::std::uint8_t> data{};
 
 		if (error)
 		{
 			NGS_LOGL(error, error.message());
 			goto next_read;
 		}
+		data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, _receive_buffer | ::std::views::take(bytes_transferred));
 		if (::std::ranges::empty(data) || ::std::ranges::size(data) != sizeof(::laser::mic::algorithm::all_parameter))
 		{
-			NGS_LOGL(error, "receive data error");
+			auto to_string = [](const ::std::span<const ::std::uint8_t>& data)
+				{
+					::std::string result{};
+					for (auto&& unit : data)
+					{
+						result += ::std::format("{:02x} ", unit);
+					}
+					return result;
+				};
+			NGS_LOGL(error, "receive data error: ", to_string(data));
 			goto next_read;
 		}
 		
