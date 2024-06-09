@@ -232,8 +232,8 @@ public:
 					
 					NGS_LOGL(error, "receive data error: ", to_string(data));
 				}
-				_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
-				NGS_LOGL(info, "receive data: ", to_string(data));
+				_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(check_result));
+				NGS_LOGL(info, "receive data: ", to_string(check_result));
 			}
 		}
 	}
