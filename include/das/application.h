@@ -139,7 +139,7 @@ public:
 			::std::lock_guard lock(_uart_read_mutex);
 			_uart_stream.in(_receive_buffer | ::std::views::take(bytes_transferred) | ::std::views::transform([](auto&& i) {return ::std::byte{ i }; }));
 		}
-		NGS_LOGL(info, ::std::format("uart received {} bytes", bytes_transferred));
+		//NGS_LOGL(info, ::std::format("uart received {} bytes", bytes_transferred));
 	next_read:
 		if (_done || !_context.serial_port || !_context.serial_port->is_open())
 		{
@@ -211,6 +211,17 @@ public:
 		}
 		{
 			::std::lock_guard lock(_uart_read_mutex);
+
+			constexpr auto to_string = [](const ::std::span<const ::std::byte>& data)
+				{
+					::std::string result{};
+					for (auto&& unit : data)
+					{
+						result += ::std::format("{:02x} ", ::std::to_integer<::std::uint8_t>(unit));
+					}
+					return result;
+				};
+
 			if (!_uart_stream.empty())
 			{
 				auto [data] = _uart_stream.out();
@@ -218,18 +229,11 @@ public:
 				auto check_result = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, ::std::span{reinterpret_cast<::std::uint8_t*>(data.data()),data.size()});
 				if (::std::ranges::empty(check_result) || ::std::ranges::size(check_result) != sizeof(::laser::mic::algorithm::all_parameter))
 				{
-					auto to_string = [](const ::std::span<const ::std::byte>& data)
-						{
-							::std::string result{};
-							for (auto&& unit : data)
-							{
-								result += ::std::format("{:02x} ", ::std::to_integer<::std::uint8_t>(unit));
-							}
-							return result;
-						};
+					
 					NGS_LOGL(error, "receive data error: ", to_string(data));
 				}
 				_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
+				NGS_LOGL(info, "receive data: ", to_string(data));
 			}
 		}
 	}
