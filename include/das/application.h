@@ -212,12 +212,12 @@ public:
 		{
 			::std::lock_guard lock(_uart_read_mutex);
 
-			constexpr auto to_string = [](const ::std::span<const ::std::byte>& data)
+			constexpr auto to_string = [](const auto& data)
 				{
 					::std::string result{};
 					for (auto&& unit : data)
 					{
-						result += ::std::format("{:02x} ", ::std::to_integer<::std::uint8_t>(unit));
+						result += ::std::format("{:02x} ", static_cast<::std::uint8_t>(unit));
 					}
 					return result;
 				};
@@ -233,7 +233,8 @@ public:
 					NGS_LOGL(error, "receive data error: ", to_string(data));
 				}
 				_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(check_result));
-				NGS_LOGL(info, "receive data: ", to_string(check_result));
+				_context.edfa_parameter.rectified_endian();
+				//NGS_LOGL(info, "receive data: ", to_string(check_result));
 			}
 		}
 	}

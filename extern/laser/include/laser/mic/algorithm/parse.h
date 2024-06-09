@@ -65,6 +65,31 @@ struct all_parameter
 	::std::uint16_t : 16;
 	::std::uint16_t : 16;
 	::std::uint16_t : 16;
+
+	constexpr void rectified_endian()
+	{
+		if constexpr (::std::endian::native == ::std::endian::little)
+		{
+			byte_swap();
+		}
+	}
+
+	constexpr void byte_swap()
+	{
+		temperature = ::std::byteswap(temperature);
+		input_power = ::std::byteswap(input_power);
+		output_power = ::std::byteswap(output_power);
+		input_power_threshold = ::std::byteswap(input_power_threshold);
+		output_power_threshold = ::std::byteswap(output_power_threshold);
+		pump_1_lop = ::std::byteswap(pump_1_lop);
+		pump_1_power = ::std::byteswap(pump_1_power);
+		pump_1_chip_temperature = ::std::byteswap(pump_1_chip_temperature);
+		pump_1_cooler = ::std::byteswap(pump_1_cooler);
+		pump_2_lop = ::std::byteswap(pump_2_lop);
+		pump_2_power = ::std::byteswap(pump_2_power);
+		pump_2_chip_temperature = ::std::byteswap(pump_2_chip_temperature);
+		pump_2_cooler = ::std::byteswap(pump_2_cooler);
+	}
 };
 
 NGS_LIB_MODULE_END
