@@ -103,13 +103,10 @@ public:
 
 	void _write_uart_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
 	{
-		constexpr auto send_buffer = ::laser::mic::commands::read_all_parameters();
-
-		NGS_EXPECT(bytes_transferred == ::std::ranges::size(send_buffer), ::std::format("send data not complete, need {}, transferred {}", ::std::ranges::size(send_buffer), bytes_transferred));
-
 		if (error)
 		{
-			NGS_LOGL(error, error.message());
+			if (error != ::boost::asio::error::operation_aborted)
+				NGS_LOGL(error, error.message());
 		}
 
 		if (_done || !_context.serial_port || !_context.serial_port->is_open())
@@ -132,7 +129,8 @@ public:
 	{
 		if (error)
 		{
-			NGS_LOGL(error, error.message());
+			if (error != ::boost::asio::error::operation_aborted)
+				NGS_LOGL(error, error.message());
 			goto next_read;
 		}
 		{
@@ -418,16 +416,16 @@ public:
 				if (::ImGui::BeginTabItem("pump"))
 				{
 					::ImGui::SeparatorText("pump 1");
-					::ImGui::Text("lop: %.1f mA", _context.edfa_parameter.pump_1_lop / 10.0f);
+					::ImGui::Text("current: %.1f mA", _context.edfa_parameter.pump_1_lop / 10.0f);
 					::ImGui::Text("power: %.1f mW", _context.edfa_parameter.pump_1_power / 10.0f);
-					::ImGui::Text("chip temperature: %.1f *C", _context.edfa_parameter.pump_1_chip_temperature / 10.0f);
-					::ImGui::Text("cooler: %.1f mA", _context.edfa_parameter.pump_1_cooler / 10.0f - 1420);
+					::ImGui::Text("temperature: %.1f *C", _context.edfa_parameter.pump_1_chip_temperature / 10.0f);
+					::ImGui::Text("tec current: %.1f mA", _context.edfa_parameter.pump_1_cooler / 10.0f - 1420);
 
 					::ImGui::SeparatorText("pump 2");
-					::ImGui::Text("lop: %.1f mA", _context.edfa_parameter.pump_2_lop / 10.0f);
+					::ImGui::Text("current: %.1f mA", _context.edfa_parameter.pump_2_lop / 10.0f);
 					::ImGui::Text("power: %.1f mW", _context.edfa_parameter.pump_2_power / 10.0f);
-					::ImGui::Text("chip temperature: %.1f *C", _context.edfa_parameter.pump_2_chip_temperature / 10.0f);
-					::ImGui::Text("cooler: %.1f mA", _context.edfa_parameter.pump_2_cooler / 10.0f - 1420);
+					::ImGui::Text("temperature: %.1f *C", _context.edfa_parameter.pump_2_chip_temperature / 10.0f);
+					::ImGui::Text("tec current: %.1f mA", _context.edfa_parameter.pump_2_cooler / 10.0f - 1420);
 
 					::ImGui::EndTabItem();
 				}
@@ -447,7 +445,7 @@ public:
 					};
 
 					::ImGui::Text("working mode: %s, %d", working_mode.at(_context.edfa_parameter.working_mode).data(), _context.edfa_parameter.working_parameter);
-					::ImGui::Text("temperature: %.1f *C", _context.edfa_parameter.temperature / 1.0f);
+					::ImGui::Text("temperature: %.1f *C", _context.edfa_parameter.temperature / 10.0f);
 
 					::ImGui::SeparatorText("optical power");
 					::ImGui::Text("input: %.1f dbm", _context.edfa_parameter.input_power / 10.0f - 70);

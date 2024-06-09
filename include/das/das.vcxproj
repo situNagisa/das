@@ -285,7 +285,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="aaa.bin" />
     <ClInclude Include="application.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="context.h" />

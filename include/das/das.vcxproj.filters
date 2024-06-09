@@ -16,7 +16,6 @@
     <ClInclude Include="application.h" />
     <ClInclude Include="stream.h" />
     <ClInclude Include="protoc_stream.h" />
-    <ClInclude Include="aaa.bin" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\main.cpp" />
