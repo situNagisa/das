@@ -290,8 +290,10 @@
     <ClInclude Include="context.h" />
     <ClInclude Include="das.h" />
     <ClInclude Include="defined.h" />
+    <ClInclude Include="protoc_stream.h" />
     <ClInclude Include="runtime.h" />
     <ClInclude Include="runtime\defined.h" />
+    <ClInclude Include="stream.h" />
     <ClInclude Include="ui.h" />
     <ClInclude Include="ui\gui.h" />
     <ClInclude Include="runtime\data.h" />

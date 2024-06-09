@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./context.h"
+#include "./stream.h"
 #include "./defined.h"
 
 NGS_LIB_BEGIN
@@ -125,32 +126,20 @@ public:
 		_context.serial_port->async_read_some(::boost::asio::buffer(_receive_buffer), ::boost::bind(&self_type::_read_uart_handler, this, ::boost::asio::placeholders::error, ::boost::asio::placeholders::bytes_transferred));
 	}
 
+	::std::mutex _uart_read_mutex{};
+
 	void _read_uart_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
 	{
-		::std::span<const ::std::uint8_t> data{};
-
 		if (error)
 		{
 			NGS_LOGL(error, error.message());
 			goto next_read;
 		}
-		data = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, _receive_buffer | ::std::views::take(bytes_transferred));
-		if (::std::ranges::empty(data) || ::std::ranges::size(data) != sizeof(::laser::mic::algorithm::all_parameter))
 		{
-			auto to_string = [](const ::std::span<const ::std::uint8_t>& data)
-				{
-					::std::string result{};
-					for (auto&& unit : data)
-					{
-						result += ::std::format("{:02x} ", unit);
-					}
-					return result;
-				};
-			NGS_LOGL(error, "receive data error: ", to_string(data));
-			goto next_read;
+			::std::lock_guard lock(_uart_read_mutex);
+			_uart_stream.in(_receive_buffer | ::std::views::take(bytes_transferred) | ::std::views::transform([](auto&& i) {return ::std::byte{ i }; }));
 		}
-		
-		_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
+		NGS_LOGL(info, ::std::format("uart received {} bytes", bytes_transferred));
 	next_read:
 		if (_done || !_context.serial_port || !_context.serial_port->is_open())
 		{
@@ -219,6 +208,29 @@ public:
 		catch (const ::boost::system::system_error& e)
 		{
 			NGS_LOGL(error, e.what());
+		}
+		{
+			::std::lock_guard lock(_uart_read_mutex);
+			if (!_uart_stream.empty())
+			{
+				auto [data] = _uart_stream.out();
+
+				auto check_result = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, ::std::span{reinterpret_cast<::std::uint8_t*>(data.data()),data.size()});
+				if (::std::ranges::empty(check_result) || ::std::ranges::size(check_result) != sizeof(::laser::mic::algorithm::all_parameter))
+				{
+					auto to_string = [](const ::std::span<const ::std::byte>& data)
+						{
+							::std::string result{};
+							for (auto&& unit : data)
+							{
+								result += ::std::format("{:02x} ", ::std::to_integer<::std::uint8_t>(unit));
+							}
+							return result;
+						};
+					NGS_LOGL(error, "receive data error: ", to_string(data));
+				}
+				_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(data));
+			}
 		}
 	}
 
@@ -461,6 +473,8 @@ public:
 	::std::span<char> _udp_receive_buffer_span{};
 	::boost::asio::ip::udp::endpoint _udp_sender_endpoint;
 	::std::atomic_bool _done = false;
+
+	stream _uart_stream{};
 };
 
 

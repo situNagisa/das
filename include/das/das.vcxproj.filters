@@ -14,6 +14,8 @@
     <ClInclude Include="ui.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="application.h" />
+    <ClInclude Include="stream.h" />
+    <ClInclude Include="protoc_stream.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\main.cpp" />
