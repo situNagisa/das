@@ -11,6 +11,11 @@ constexpr auto to_string(::std::ranges::range auto&& range, ::std::string_view f
 	return result;
 }
 
+constexpr auto flag_check(::std::ranges::input_range auto&& buffer, auto iterator)
+{
+	
+}
+
 // Main code
 int main(int, char**)
 {

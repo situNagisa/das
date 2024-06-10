@@ -4,6 +4,7 @@
 
 NGS_LIB_BEGIN
 
+
 struct buffer
 {
 	auto size_data() { return _data | ::std::views::take(size); }
