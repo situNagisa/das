@@ -29,7 +29,7 @@ if "$(nagisa_root)" then
 	add_includedirs("$(nagisa_root)/include")
 end
 
-add_requires("vcpkg::glfw3","opengl")
+add_requires("vcpkg::boost","vcpkg::glfw3","opengl")
 if is_plat("windows") then
 	add_requires("gdi32","shell32","libcmt")
 end
@@ -74,7 +74,7 @@ target("das")
 		end
 	end
 
-	add_packages("vcpkg::glfw3","opengl")
+	add_packages("vcpkg::boost","vcpkg::glfw3","opengl")
 	if is_plat("windows") then
 		add_packages("gdi32","shell32","libcmt")
 	end

@@ -5,7 +5,6 @@
     <ClInclude Include="defined.h" />
     <ClInclude Include="ui\gui.h" />
     <ClInclude Include="runtime\data.h" />
-    <ClInclude Include="sb.h" />
     <ClInclude Include="ui\ui.h" />
     <ClInclude Include="ui\defined.h" />
     <ClInclude Include="runtime\defined.h" />

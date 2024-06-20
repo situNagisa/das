@@ -175,7 +175,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DAS_CONFIG_FONT_FILE="./misc/fonts/Roboto-Medium.ttf";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)/extern/implot/include;$(SolutionDir)/extern/imgui/include;$(SolutionDir)/extern/laser/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -249,7 +249,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DAS_CONFIG_FONT_FILE="./misc/fonts/Roboto-Medium.ttf";NDEBUG;_CONSOLE;%(PreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)/extern/implot/include;$(SolutionDir)/extern/imgui/include;$(SolutionDir)/extern/laser/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -297,7 +297,6 @@
     <ClInclude Include="ui.h" />
     <ClInclude Include="ui\gui.h" />
     <ClInclude Include="runtime\data.h" />
-    <ClInclude Include="sb.h" />
     <ClInclude Include="ui\ui.h" />
     <ClInclude Include="ui\defined.h" />
   </ItemGroup>

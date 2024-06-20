@@ -51,6 +51,32 @@
     <ClInclude Include="22include\imstb_rectpack.h" />
     <ClInclude Include="22include\imstb_textedit.h" />
     <ClInclude Include="22include\imstb_truetype.h" />
+    <ClInclude Include="include\backend\imgui_impl_allegro5.h" />
+    <ClInclude Include="include\backend\imgui_impl_android.h" />
+    <ClInclude Include="include\backend\imgui_impl_dx10.h" />
+    <ClInclude Include="include\backend\imgui_impl_dx11.h" />
+    <ClInclude Include="include\backend\imgui_impl_dx12.h" />
+    <ClInclude Include="include\backend\imgui_impl_dx9.h" />
+    <ClInclude Include="include\backend\imgui_impl_glfw.h" />
+    <ClInclude Include="include\backend\imgui_impl_glut.h" />
+    <ClInclude Include="include\backend\imgui_impl_metal.h" />
+    <ClInclude Include="include\backend\imgui_impl_opengl2.h" />
+    <ClInclude Include="include\backend\imgui_impl_opengl3.h" />
+    <ClInclude Include="include\backend\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="include\backend\imgui_impl_osx.h" />
+    <ClInclude Include="include\backend\imgui_impl_sdl2.h" />
+    <ClInclude Include="include\backend\imgui_impl_sdl3.h" />
+    <ClInclude Include="include\backend\imgui_impl_sdlrenderer2.h" />
+    <ClInclude Include="include\backend\imgui_impl_sdlrenderer3.h" />
+    <ClInclude Include="include\backend\imgui_impl_vulkan.h" />
+    <ClInclude Include="include\backend\imgui_impl_wgpu.h" />
+    <ClInclude Include="include\backend\imgui_impl_win32.h" />
+    <ClInclude Include="include\imconfig.h" />
+    <ClInclude Include="include\imgui.h" />
+    <ClInclude Include="include\imgui_internal.h" />
+    <ClInclude Include="include\imstb_rectpack.h" />
+    <ClInclude Include="include\imstb_textedit.h" />
+    <ClInclude Include="include\imstb_truetype.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

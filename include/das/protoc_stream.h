@@ -140,15 +140,15 @@ namespace protoc_stream
 		template<class R>
 		consteval static auto choose()
 		{
-			if constexpr (requires(R r, ::std::ranges::iterator_t<R> i) { T::parse(NGS_PP_PERFECT_FORWARD(r), i); })
+			if constexpr (requires(R r) { T::parse(NGS_PP_PERFECT_FORWARD(r)); })
 			{
 				return choose_type::member;
 			}
-			else if constexpr (::std::default_initializable<T> && requires(T t, R r, ::std::ranges::iterator_t<R> i) { t(NGS_PP_PERFECT_FORWARD(r), i); })
+			else if constexpr (::std::default_initializable<T> && requires(T t, R r) { t(NGS_PP_PERFECT_FORWARD(r)); })
 			{
 				return choose_type::callable;
 			}
-			else if constexpr (requires(R r, ::std::ranges::iterator_t<R> i) { parse<T>(NGS_PP_PERFECT_FORWARD(r), i); })
+			else if constexpr (requires(R r) { parse<T>(NGS_PP_PERFECT_FORWARD(r)); })
 			{
 				return choose_type::adl;
 			}
@@ -159,21 +159,21 @@ namespace protoc_stream
 		}
 
 		template<::std::ranges::input_range R>
-		NGS_CONFIG_STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(R&& r, ::std::ranges::iterator_t<R> i) NGS_CONFIG_STATIC_CALL_OPERATOR_CONST
+		NGS_CONFIG_STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(R&& r) NGS_CONFIG_STATIC_CALL_OPERATOR_CONST
 			requires (choose<R>() != choose_type::none)
 		{
 			constexpr auto chose = choose<R>();
 			if constexpr (chose == choose_type::member)
 			{
-				return T::parse(NGS_PP_PERFECT_FORWARD(r), i);
+				return T::parse(NGS_PP_PERFECT_FORWARD(r));
 			}
 			else if constexpr (chose == choose_type::callable)
 			{
-				return T{}(NGS_PP_PERFECT_FORWARD(r), i);
+				return T{}(NGS_PP_PERFECT_FORWARD(r));
 			}
 			else if constexpr (chose == choose_type::adl)
 			{
-				return parse<T>(NGS_PP_PERFECT_FORWARD(r), i);
+				return parse<T>(NGS_PP_PERFECT_FORWARD(r));
 			}
 		}
 	};
@@ -182,19 +182,18 @@ namespace protoc_stream
 	inline constexpr _parse_functor<T> parse{};
 
 	template<class T, class R>
-	concept field = ::std::ranges::range<R> && requires(R r, ::std::ranges::iterator_t<R> i)
+	concept field = ::std::ranges::range<R> && requires(R r)
 	{
-		{ parse<T>(NGS_PP_PERFECT_FORWARD(r), i) } -> field_parse_result;
+		{ parse<T>(NGS_PP_PERFECT_FORWARD(r)) } -> ::std::convertible_to<bool>;
 	};
 
 	template<::std::ranges::input_range R, field<R>... Fs>
 	using field_sequence = ::std::tuple<Fs...>;
 
 	template<class Fields, ::std::size_t I>
-	constexpr auto recurse_check(auto&& range, auto iterator)
+	constexpr auto recurse_check(auto&& range)
 	{
-		auto result = parse<::std::tuple_element_t<I, Fields>>(range, iterator);
-		if (!has_value(result))
+		if (!parse<::std::tuple_element_t<I, Fields>>(range))
 			return false;
 		if constexpr (I == ::std::tuple_size_v<Fields> -1)
 		{
@@ -203,7 +202,7 @@ namespace protoc_stream
 		else
 		{
 
-			return protoc_stream::recurse_check<Fields, I + 1>(NGS_PP_PERFECT_FORWARD(range), value(result));
+			return protoc_stream::recurse_check<Fields, I + 1>(NGS_PP_PERFECT_FORWARD(range));
 		}
 	}
 
@@ -215,7 +214,7 @@ namespace protoc_stream
 		NGS_CONFIG_STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(::std::ranges::input_range auto&& range) NGS_CONFIG_STATIC_CALL_OPERATOR_CONST
 			requires (field<Fields, decltype(range)> && ...)
 		{
-			return protoc_stream::recurse_check<::std::tuple<Fields...>, 0>(NGS_PP_PERFECT_FORWARD(range), ::std::ranges::begin(range));
+			return protoc_stream::recurse_check<::std::tuple<Fields...>, 0>(NGS_PP_PERFECT_FORWARD(range));
 		}
 	};
 
