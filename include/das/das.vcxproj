@@ -301,6 +301,7 @@
     <ClInclude Include="ui\defined.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\imgui\imgui_file_dialog\source\ImFileDialog.cpp" />
     <ClCompile Include="..\..\source\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

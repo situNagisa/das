@@ -3,6 +3,8 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
+#include <glad/glad.h>
+
 #define NGS_USE_HPP
 #include "NGS/basic/basic.h"
 #include "NGS/external/glfw.h"
@@ -13,6 +15,8 @@
 #include <GLFW/glfw3.h>
 
 #include "implot.h"
+
+#include "ImFileDialog.h"
 
 //#define LASER_CONFIG_USE_HPP
 #include "laser/laser.h"

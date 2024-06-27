@@ -20,6 +20,9 @@ struct gui
 		glfw::window& window = *(_window = ::std::make_unique<glfw::window>("pcie 250 sps data reader", das_config::window_size.first, das_config::window_size.second));
 		::glfwSwapInterval(0); // Enable vsync
 
+		bool success = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+		NGS_ASSERT(success);
+
 		IMGUI_CHECKVERSION();
 		::ImGui::CreateContext();
 		::ImPlot::CreateContext();
@@ -52,6 +55,27 @@ struct gui
 		//io.Fonts->AddFontFromFileTTF("../misc/fonts/Cousine-Regular.ttf", 15.0f);
 		//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 		//IM_ASSERT(font != nullptr);
+
+		// ImFileDialog requires you to set the CreateTexture and DeleteTexture
+		ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+			GLuint tex;
+
+			glGenTextures(1, &tex);
+			glBindTexture(GL_TEXTURE_2D, tex);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			return (void*)tex;
+			};
+		ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
+			GLuint texID = (GLuint)((uintptr_t)tex);
+			glDeleteTextures(1, &texID);
+			};
 	}
 
 	~gui()

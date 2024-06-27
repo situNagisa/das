@@ -42,7 +42,7 @@ struct das_config
 		float blue;
 		float alpha;
 	} background_color = DAS_CONFIG_BACKGROUND_COLOR;
-	constexpr static ::std::size_t limit_point = ::std::numeric_limits<short>::max() / 16;
+	inline static ::std::size_t limit_point = ::std::numeric_limits<short>::max() / 16;
 };
 
 NGS_LIB_END

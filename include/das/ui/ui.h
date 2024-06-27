@@ -24,6 +24,8 @@ struct line_storage
 		depend_variable.resize(size);
 	}
 
+	auto empty() const { return independent_variable.empty() && depend_variable.empty(); }
+
 	auto size() const
 	{
 		return ::std::min(independent_variable.size(), depend_variable.size());

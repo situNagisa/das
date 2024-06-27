@@ -39,12 +39,6 @@ public:
 			});
 
 		::laser::pcie6920::atomic::config(_context.runtime.pcie_config);
-
-		NGS_LOGL(info, "wait for udp connect");
-		while (!_context.udp_socket.is_open());
-		
-		_next_read_udp();
-		NGS_LOGL(info, "udp connected");
 	}
 	~application()
 	{
@@ -148,30 +142,6 @@ public:
 		_next_read_uart();
 	}
 
-	void _next_read_udp()
-	{
-		_context.udp_socket.async_receive_from(::boost::asio::buffer(_udp_receive_buffer), _udp_sender_endpoint, ::boost::bind(&self_type::_read_udp_handler, this, ::boost::asio::placeholders::error, ::boost::asio::placeholders::bytes_transferred));
-	}
-
-	void _read_udp_handler(const ::boost::system::error_code& error, ::std::size_t bytes_transferred)
-	{
-		if (error)
-		{
-			NGS_LOGL(error, error.message());
-			goto next_read;
-		}
-		_udp_receive_buffer_span = _udp_receive_buffer | ::std::views::take(bytes_transferred);
-		NGS_LOGL(info, ::std::format("{}:{} transferred {} {}", _udp_sender_endpoint.address().to_string(), _udp_sender_endpoint.port(), bytes_transferred, ::std::string_view{ _udp_receive_buffer.data(), bytes_transferred }));
-	next_read:
-		if (_done || !_context.udp_socket.is_open())
-		{
-			NGS_LOGL(info, "bye bye~");
-			return;
-		}
-
-		_next_read_udp();
-	}
-
 	void _update()
 	{
 		if (_context.runtime.recording)
@@ -224,16 +194,39 @@ public:
 			{
 				auto [data] = _uart_stream.out();
 
-				auto check_result = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, ::std::span{reinterpret_cast<::std::uint8_t*>(data.data()),data.size()});
+				auto check_result = ::laser::mic::algorithm::receive_check(::laser::mic::protocols::command::read_all_parameters, ::std::span{ reinterpret_cast<::std::uint8_t*>(data.data()),data.size() });
 				if (::std::ranges::empty(check_result) || ::std::ranges::size(check_result) != sizeof(::laser::mic::algorithm::all_parameter))
 				{
-					
+
 					NGS_LOGL(error, "receive data error: ", to_string(data));
 				}
 				_context.edfa_parameter = *reinterpret_cast<const ::laser::mic::algorithm::all_parameter*>(::std::ranges::data(check_result));
 				_context.edfa_parameter.rectified_endian();
 				//NGS_LOGL(info, "receive data: ", to_string(check_result));
 			}
+		}
+	}
+
+	void _save() const
+	{
+		::std::filesystem::path path = ::std::filesystem::path(_root_directory) / ::std::string(_type.data());
+		::std::filesystem::path file = ::std::string(_type.data()) + "_" + ::std::to_string(_hold_time) + ".dat";
+
+		if(!::std::filesystem::exists(path))
+		{
+			::std::filesystem::create_directory(path);
+		}
+
+		try
+		{
+			::std::ofstream output(path / file, ::std::ios::out | ::std::ios::binary);
+			output.write(reinterpret_cast<const char*>(_channel0_line.depend_variable.data()), _channel0_line.depend_variable.size() * sizeof(::std::ranges::range_value_t<decltype(_channel0_line.depend_variable)>));
+			output.write(reinterpret_cast<const char*>(_channel1_line.depend_variable.data()), _channel1_line.depend_variable.size() * sizeof(::std::ranges::range_value_t<decltype(_channel1_line.depend_variable)>));
+			output.close();
+		}
+		catch (::std::exception& e)
+		{
+			NGS_LOGL(error, "save fail! ", e.what());
 		}
 	}
 
@@ -255,10 +248,14 @@ public:
 			{
 				if (::ImGui::BeginTabItem("pcie"))
 				{
+					/*
 					if (_context.runtime.recording)
 					{
 						if (::ImGui::Button("stop", { width , 0 }))
+						{
 							_context.runtime.recording = false;
+							_save();
+						}
 					}
 					else
 					{
@@ -269,9 +266,11 @@ public:
 					{
 						channel0_line_data().clear();
 						channel1_line_data().clear();
+						_channel0_line.clear();
+						_channel1_line.clear();
 						_context.time = 0;
 					}
-
+					*/
 					::ImGui::SeparatorText("config");
 					{
 						if (::ImGui::Button("config", { width , 0 }))
@@ -295,6 +294,54 @@ public:
 							_context.runtime.pcie_config.center_frequency = static_cast<::std::uint32_t>(center_frequency);
 						}
 					}
+					::ImGui::SeparatorText("save");
+					if (!_context.runtime.recording)
+					{
+						if (::ImGui::Button("open root", { width , 0 }))
+						{
+							::ifd::FileDialog::Instance().Open("root_directory", "save root directory", "");
+						}
+						if (::ifd::FileDialog::Instance().IsDone("root_directory")) {
+							if (::ifd::FileDialog::Instance().HasResult()) {
+								_root_directory = ::ifd::FileDialog::Instance().GetResult().string();
+								NGS_LOGL(info, "root file: ", _root_directory);
+							}
+							::ifd::FileDialog::Instance().Close();
+						}
+						::ImGui::InputText("root dir", _root_directory.data(), _root_directory.size());
+						::ImGui::InputText("type", _type.data(), _type.size());
+						::ImGui::DragScalar("hold time", ImGuiDataType_U32, &_hold_time, 1, nullptr, nullptr, "%d s");
+
+						if (!_root_directory.empty() && (::std::strlen(_type.data()) != 0))
+						{
+							if (::ImGui::Button("start", { width , 0 }))
+							{
+								_context.runtime.recording = true;
+								das_config::limit_point = _hold_time * 1024;
+								::std::thread([this]
+									{
+										using namespace ::std::chrono_literals;
+										auto start = ::std::chrono::system_clock::now();
+										while (::std::chrono::system_clock::now() - start < ::std::chrono::seconds(_hold_time))
+										{
+
+										}
+										_context.runtime.recording = false;
+										_save();
+										channel0_line_data().clear();
+										channel1_line_data().clear();
+										_channel0_line.clear();
+										_channel1_line.clear();
+										_context.time = 0;
+									}).detach();
+							}
+						}
+					}
+					else
+					{
+						::ImGui::Text("recoding data...");
+					}
+
 					::ImGui::EndTabItem();
 				}
 				if (::ImGui::BeginTabItem("uart"))
@@ -429,12 +476,6 @@ public:
 
 					::ImGui::EndTabItem();
 				}
-				if (::ImGui::BeginTabItem("udp"))
-				{
-					::ImGui::Text(::std::format("message: {}", ::std::string_view{_udp_receive_buffer_span}).c_str());
-
-					::ImGui::EndTabItem();
-				}
 				if (::ImGui::BeginTabItem("other"))
 				{
 					static const ::std::unordered_map<::laser::mic::algorithm::all_parameter::working_mode_type, ::std::string_view> working_mode
@@ -472,12 +513,13 @@ public:
 	::das::ui::line_storage _channel1_line{};
 	::std::string_view _open_message = "";
 	::std::array<::std::uint8_t, 0x100> _receive_buffer{};
-	::std::array<char, 0x100> _udp_receive_buffer{};
-	::std::span<char> _udp_receive_buffer_span{};
-	::boost::asio::ip::udp::endpoint _udp_sender_endpoint;
 	::std::atomic_bool _done = false;
 
 	stream _uart_stream{};
+
+	::std::string _root_directory{};
+	::std::array<char, 32> _type{ "unknown" };
+	::std::uint32_t _hold_time = 2;
 };
 
 

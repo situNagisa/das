@@ -18,5 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\main.cpp" />
+    <ClCompile Include="..\..\..\imgui\imgui_file_dialog\source\ImFileDialog.cpp" />
   </ItemGroup>
 </Project>
