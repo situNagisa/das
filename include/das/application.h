@@ -230,6 +230,7 @@ public:
 		}
 	}
 
+	bool _save_success = false;
 	void _render()
 	{
 		auto render_guard = _context.gui.render_guard();
@@ -328,11 +329,8 @@ public:
 										}
 										_context.runtime.recording = false;
 										_save();
-										channel0_line_data().clear();
-										channel1_line_data().clear();
-										_channel0_line.clear();
-										_channel1_line.clear();
-										_context.time = 0;
+										_save_success = true;
+										
 									}).detach();
 							}
 						}
@@ -501,6 +499,25 @@ public:
 
 			::ImGui::PopItemWidth();
 			::ImGui::End();
+		}
+		if (_save_success)
+			::ImGui::OpenPopup("__");
+		if (::ImGui::BeginPopupModal("__"))
+		{
+			ImGui::Text("save success!");
+
+			if (ImGui::Button("ok", ImVec2(120, 0)))
+			{
+				channel0_line_data().clear();
+				channel1_line_data().clear();
+				_channel0_line.clear();
+				_channel1_line.clear();
+				_context.time = 0;
+				_save_success = false;
+				ImGui::CloseCurrentPopup(); // 关闭当前的弹窗
+			}
+			// 必须调用 End 来结束弹窗的创建
+			ImGui::EndPopup();
 		}
 
 		_context.plot.render();
