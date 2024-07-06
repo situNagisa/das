@@ -1,0 +1,6 @@
+#pragma once
+
+#include "./defined.h"
+
+//PCIE6920_250M_CONFIG_USE_HPP
+//PCIE6920_250M_CONFIG_ENABLE_VISUAL_PCIE

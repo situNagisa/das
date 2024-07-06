@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{afd40f52-caf7-490e-89fa-bec16b8cbaf5}</ProjectGuid>
+    <RootNamespace>laser</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>pcie6920_250m</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa.props" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa_library.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa.props" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa_library.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa.props" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa_library.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa.props" />
+    <Import Project="$(VS_PROP_ROOT)\nagisa_library.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="source\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="atomic.h" />
+    <ClInclude Include="atomic\config.h" />
+    <ClInclude Include="atomic\defined.h" />
+    <ClInclude Include="atomic\info.h" />
+    <ClInclude Include="atomic\io.h" />
+    <ClInclude Include="atomic\packet.h" />
+    <ClInclude Include="atomic\point.h" />
+    <ClInclude Include="atomic\unit.h" />
+    <ClInclude Include="c.h" />
+    <ClInclude Include="c.hpp" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="defined.h" />
+    <ClInclude Include="enum.h" />
+    <ClInclude Include="guard.h" />
+    <ClInclude Include="guard\defined.h" />
+    <ClInclude Include="guard\io.h" />
+    <ClInclude Include="guard\instance.h" />
+    <ClInclude Include="include\laser\atomic.h" />
+    <ClInclude Include="include\laser\atomic\config.h" />
+    <ClInclude Include="include\laser\atomic\defined.h" />
+    <ClInclude Include="include\laser\atomic\info.h" />
+    <ClInclude Include="include\laser\atomic\io.h" />
+    <ClInclude Include="include\laser\atomic\packet.h" />
+    <ClInclude Include="include\laser\atomic\point.h" />
+    <ClInclude Include="include\laser\atomic\unit.h" />
+    <ClInclude Include="include\laser\c.h" />
+    <ClInclude Include="include\laser\c.hpp" />
+    <ClInclude Include="include\laser\defined.h" />
+    <ClInclude Include="include\laser\enum.h" />
+    <ClInclude Include="include\laser\guard.h" />
+    <ClInclude Include="include\laser\guard\defined.h" />
+    <ClInclude Include="include\laser\guard\io.h" />
+    <ClInclude Include="include\laser\guard\open.h" />
+    <ClInclude Include="include\laser\laser.h" />
+    <ClInclude Include="include\laser\laser.hpp" />
+    <ClInclude Include="include\laser\undefined.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\config.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\defined.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\info.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\io.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\packet.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\point.h" />
+    <ClInclude Include="include\pcie6920_250m\atomic\unit.h" />
+    <ClInclude Include="include\pcie6920_250m\c.h" />
+    <ClInclude Include="include\pcie6920_250m\c.hpp" />
+    <ClInclude Include="include\pcie6920_250m\config.h" />
+    <ClInclude Include="include\pcie6920_250m\defined.h" />
+    <ClInclude Include="include\pcie6920_250m\enum.h" />
+    <ClInclude Include="include\pcie6920_250m\guard.h" />
+    <ClInclude Include="include\pcie6920_250m\guard\defined.h" />
+    <ClInclude Include="include\pcie6920_250m\guard\io.h" />
+    <ClInclude Include="include\pcie6920_250m\guard\open.h" />
+    <ClInclude Include="include\pcie6920_250m\pcie6920_250m.h" />
+    <ClInclude Include="include\pcie6920_250m\pcie6920_250m.hpp" />
+    <ClInclude Include="include\pcie6920_250m\undefined.h" />
+    <ClInclude Include="pcie6920_250m.h" />
+    <ClInclude Include="pcie6920_250m.hpp" />
+    <ClInclude Include="undefined.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
