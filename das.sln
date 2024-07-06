@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcie6920_250m", "include\pc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quick_ui", "include\quick_ui\quick_ui.vcxproj", "{BCE356A3-4F9F-4EE2-BB4F-11B4C8E7AEBB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "visual", "main\visual.vcxproj", "{9C526739-3539-469A-AF10-F52257775DCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{BCE356A3-4F9F-4EE2-BB4F-11B4C8E7AEBB}.Release|x64.Build.0 = Release|x64
 		{BCE356A3-4F9F-4EE2-BB4F-11B4C8E7AEBB}.Release|x86.ActiveCfg = Release|Win32
 		{BCE356A3-4F9F-4EE2-BB4F-11B4C8E7AEBB}.Release|x86.Build.0 = Release|Win32
+		{9C526739-3539-469A-AF10-F52257775DCD}.Debug|x64.ActiveCfg = Debug|x64
+		{9C526739-3539-469A-AF10-F52257775DCD}.Debug|x64.Build.0 = Debug|x64
+		{9C526739-3539-469A-AF10-F52257775DCD}.Debug|x86.ActiveCfg = Debug|Win32
+		{9C526739-3539-469A-AF10-F52257775DCD}.Debug|x86.Build.0 = Debug|Win32
+		{9C526739-3539-469A-AF10-F52257775DCD}.Release|x64.ActiveCfg = Release|x64
+		{9C526739-3539-469A-AF10-F52257775DCD}.Release|x64.Build.0 = Release|x64
+		{9C526739-3539-469A-AF10-F52257775DCD}.Release|x86.ActiveCfg = Release|Win32
+		{9C526739-3539-469A-AF10-F52257775DCD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

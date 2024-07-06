@@ -2,7 +2,6 @@
 
 #define NGS_USE_HPP
 #define PCIE6920_250M_CONFIG_USE_HPP
-#define PCIE6920_250M_CONFIG_ENABLE_VISUAL_PCIE
 
 #include "quick_ui/quick_ui.h"
 #include "edfa/edfa.h"
