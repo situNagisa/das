@@ -62,7 +62,7 @@ struct application
 	}
 
 	::quick_ui::guard::glfw _glfw{ "das", 1300, 670 };
-	::quick_ui::guard::imgui _gui{ _glfw };
+	::quick_ui::guard::imgui _gui{ _glfw , "./misc/fonts/Roboto-Medium.ttf"};
 	pcies::instance _pcie{};
 	edfa_module::instance _edfa{};
 };
