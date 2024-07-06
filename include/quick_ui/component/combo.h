@@ -110,7 +110,7 @@ constexpr decltype(auto) combo(::std::string_view label, auto& current_item)
 	return NGS_LIB_MODULE_NAME::combo(
 		label,
 		current_item,
-		::std::views::iota(0) | ::std::views::take(_detail::enum_max<enum_type>()) | ::std::ranges::transform([](auto&& v) {return static_cast<enum_type>(v); }),
+		::std::views::iota(0) | ::std::views::take(_detail::enum_max<enum_type>()) | ::std::views::transform([](auto&& v) {return static_cast<enum_type>(v); }),
 		_detail::enum_names<enum_type>()
 	);
 }

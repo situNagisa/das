@@ -6,6 +6,4 @@ bin/
 temp/
 lib/x64
 lib/x86
-extern/imgui/lib
-extern/imgui_file_dialog/lib
-extern/implot/
+extern

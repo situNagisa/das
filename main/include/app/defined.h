@@ -3,6 +3,8 @@
 #define NGS_USE_HPP
 #define PCIE6920_250M_CONFIG_USE_HPP
 
+#include <boost/asio.hpp>
+
 #include "quick_ui/quick_ui.h"
 #include "edfa/edfa.h"
 #include "pcie6920_250m/pcie6920_250m.h"

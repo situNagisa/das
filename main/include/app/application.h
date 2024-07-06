@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./pcie.h"
+#include "./edfa_module.h"
 #include "./defined.h"
 
 NGS_LIB_BEGIN
@@ -29,15 +30,17 @@ struct application
 						if (::ImGui::BeginTabItem("pcie"))
 						{
 							::ImGui::SeparatorText("config");
-							_instance.render_config();
+							_pcie.render_config();
 							::ImGui::SeparatorText("save");
-							_instance.render_save();
+							_pcie.render_save();
 
 							::ImGui::EndTabItem();
 						}
 						if (::ImGui::BeginTabItem("uart"))
 						{
-
+							_edfa.render_control();
+							_edfa.render_config();
+							_edfa.render_message();
 							::ImGui::EndTabItem();
 						}
 
@@ -49,17 +52,19 @@ struct application
 				::ImGui::SetNextWindowSize({ 916,639 }, ImGuiCond_FirstUseEver);
 				if (::ImGui::Begin("channel data", nullptr, window_flag))
 				{
-					_instance.render_plot();
+					_pcie.render_plot();
 					::ImGui::End();
 				}
 			}
-			_instance.update();
+			_pcie.update();
+			_edfa.update();
 		}
 	}
 
 	::quick_ui::guard::glfw _glfw{ "das", 1300, 670 };
 	::quick_ui::guard::imgui _gui{ _glfw };
-	pcies::instance _instance{};
+	pcies::instance _pcie{};
+	edfa_module::instance _edfa{};
 };
 
 NGS_LIB_END
