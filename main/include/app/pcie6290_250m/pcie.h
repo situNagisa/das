@@ -8,23 +8,53 @@ NGS_LIB_MODULE_BEGIN
 struct instance
 {
 	using packet_type = ::pcie6920_250m::atomic::packet<::pcie6920_250m::enums::parse_rule::raw_data, ::pcie6920_250m::enums::channel_quantity::_1>;
-	using point_type = ::std::int16_t;
+	using point_type = ::std::int32_t;
+
+	struct read_pcie_promise;
+
+	struct read_pcie_task : ::std::coroutine_handle<read_pcie_promise>
+	{
+		using promise_type = read_pcie_promise;
+	};
+
+	struct read_pcie_promise
+	{
+		static ::std::suspend_always initial_suspend() noexcept { return {}; }
+		static ::std::suspend_always final_suspend() noexcept { return {}; }
+		static void return_void() noexcept {}
+		read_pcie_task get_return_object() noexcept { return { read_pcie_task::from_promise(*this) }; }
+		::std::suspend_always yield_value(bool success) noexcept { read_success = success; return {}; }
+		static void unhandled_exception() { NGS_LOGL(error, "woc? "); } // ±£¥Ê“Ï≥£
+		bool read_success = false;
+	};
 
 	instance()
+		: _read_pcie_handle(read())
 	{
 		resize(_info.packet_size, _info.scan_rate);
+		_instance.config(_info);
+	}
+	~instance()
+	{
+		_read_pcie_handle.destroy();
 	}
 
-	bool read()
+	read_pcie_task read()
 	{
 		auto io = _instance.open_io();
 
-		if (io.buffer_packet_size() < _buffer.size())
-			return false;
+		while(true)
+		{
+			if (io.buffer_packet_size() < _buffer.size())
+			{
+				NGS_LOGL(info, "buffer packet size: ", io.buffer_packet_size());
+				co_yield false;
+			}
 
-		io.read(_buffer.packet_buffer());
-		_buffer.transfer();
-		return true;
+			io.read(_buffer.packet_buffer());
+			_buffer.transfer();
+			co_yield true;
+		}
 	}
 
 	void resize(::std::size_t packet_size, ::std::size_t total_frame)
@@ -44,7 +74,8 @@ struct instance
 	{
 		if(_state.hold_time)
 		{
-			if(read())
+			_read_pcie_handle.resume();
+			if(_read_pcie_handle.promise().read_success)
 			{
 				auto bytes_channel0 = ::std::as_bytes(_buffer.channel<0>());
 				_state.channel0.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel0)), ::std::ranges::size(bytes_channel0));
@@ -167,10 +198,11 @@ struct instance
 	void _render_line(::std::string_view title, ::std::span<point_type> independent, ::std::span<point_type> dependent)
 	{
 		::ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_None, ImPlotAxisFlags_AutoFit);
-		if (!independent.empty())
-		{
-			::ImPlot::SetupAxisLimits(ImAxis_X1, independent.front(), independent.front() + ::pcie6920_250m::atomic::unit_size(_info.packet_size), ImGuiCond_Always);
-		}
+		auto start = independent.empty() ? 0.0 : static_cast<double>(independent.front());
+		::ImPlot::SetupAxisLimits(ImAxis_X1,
+			start,
+			start + static_cast<double>(::pcie6920_250m::atomic::unit_size(_info.packet_size)),
+			ImGuiCond_Always);
 		::ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
 
 		::quick_ui::components::plot_line(title, independent, dependent);
@@ -257,6 +289,7 @@ struct instance
 
 	::std::vector<point_type> _times{};
 	buffer< packet_type, point_type> _buffer{};
+	read_pcie_task _read_pcie_handle;
 };
 
 NGS_LIB_MODULE_END

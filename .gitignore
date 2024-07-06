@@ -6,3 +6,4 @@ bin/
 temp/
 lib/x64
 lib/x86
+extern/*/lib/*
