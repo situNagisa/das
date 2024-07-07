@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <IMGUI_ROOT>C:\workspace\project\other\imgui\imgui\</IMGUI_ROOT>
+    <IMPLOT_ROOT>C:\workspace\project\other\imgui\implot\</IMPLOT_ROOT>
+    <IMGUI_FILE_DIALOG_ROOT>C:\workspace\project\other\imgui\imgui_file_dialog\</IMGUI_FILE_DIALOG_ROOT>
+  </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)extern\imgui_file_dialog\lib\$(Platform)\$(Configuration)\;$(SolutionDir)extern\implot\lib\$(Platform)\$(Configuration)\;$(SolutionDir)extern\imgui\lib\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)extern/imgui_file_dialog/include/;$(SolutionDir)extern/implot/include/;$(SolutionDir)extern/imgui/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IMGUI_FILE_DIALOG_ROOT)include/;$(IMPLOT_ROOT)include/;$(IMGUI_ROOT)include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BuildMacro Include="IMGUI_ROOT">
+      <Value>$(IMGUI_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="IMPLOT_ROOT">
+      <Value>$(IMPLOT_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="IMGUI_FILE_DIALOG_ROOT">
+      <Value>$(IMGUI_FILE_DIALOG_ROOT)</Value>
+    </BuildMacro>
+  </ItemGroup>
 </Project>
