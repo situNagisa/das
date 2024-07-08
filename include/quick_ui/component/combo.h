@@ -34,13 +34,13 @@ constexpr decltype(auto) combo(::std::string_view label, T& current_item, ::std:
 			}
 			else
 			{
-				static const auto c_str_labels = NGS_PP_PERFECT_FORWARD(items_label) | ::std::ranges::to<::std::vector<const char*>>();
+				static const auto c_str_labels = items_label | ::std::ranges::to<::std::vector<const char*>>();
 				return c_str_labels;
 			}
 		}
 		else
 		{
-			static const auto string_labels = NGS_PP_PERFECT_FORWARD(items_label) | ::std::views::transform([](const auto& item) { return ::ngs::to_strings::to_string(item); }) | ::std::ranges::to<::std::vector<::std::string>>();
+			static const auto string_labels = items_label | ::std::views::transform([](const auto& item) { return ::ngs::to_strings::to_string(item); }) | ::std::ranges::to<::std::vector<::std::string>>();
 			static const auto c_str_labels = string_labels | ::std::views::transform([](const auto& item) { return ::std::ranges::data(item); }) | ::std::ranges::to<::std::vector<const char*>>();
 			return c_str_labels;
 		}

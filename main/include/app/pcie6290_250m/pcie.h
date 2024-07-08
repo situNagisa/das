@@ -78,17 +78,29 @@ struct instance
 			_read_pcie_handle.resume();
 			if(_read_pcie_handle.promise().read_success)
 			{
-				auto bytes_channel0 = ::std::as_bytes(_buffer.channel<0>());
-				_state.channel0.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel0)), ::std::ranges::size(bytes_channel0));
-				auto bytes_channel1 = ::std::as_bytes(_buffer.channel<1>());
-				_state.channel1.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel1)), ::std::ranges::size(bytes_channel1));
+				if(_state.channel0.is_open())
+				{
+					auto bytes_channel0 = ::std::as_bytes(_buffer.channel<0>());
+					_state.channel0.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel0)), ::std::ranges::size(bytes_channel0));
+				}
+				if (_state.channel1.is_open())
+				{
+					auto bytes_channel1 = ::std::as_bytes(_buffer.channel<1>());
+					_state.channel1.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel1)), ::std::ranges::size(bytes_channel1));
+				}
 				--_state.hold_time;
 			}
 
 			if(!_state.hold_time)
 			{
-				_state.channel0.close();
-				_state.channel1.close();
+				if (_state.channel0.is_open())
+				{
+					_state.channel0.close();
+				}
+				if (_state.channel1.is_open())
+				{
+					_state.channel1.close();
+				}
 			}
 		}
 	}
@@ -99,7 +111,10 @@ struct instance
 	}
 	auto _get_file_name(::std::string_view name) const
 	{
-		return ::std::format("{}_{0:%F}_{0:%T}.bin", _config.type.data(), clock_type::now());
+		auto time = clock_type::to_time_t(clock_type::now());
+		::std::stringstream ss{};
+		ss << ::std::put_time(::std::localtime(&time), "%F-%H-%M-%S");
+		return ::std::format("{}_{}.bin", _config.type.data(), ss.str());
 	}
 
 	void _open_file(::std::ofstream& file, ::std::string_view name) const
@@ -111,9 +126,9 @@ struct instance
 			::std::filesystem::create_directories(dir);
 		}
 
-		dir /= _get_file_name(name);
-		file.open(dir, ::std::ios::binary | ::std::ios::out);
+		file.open(dir / _get_file_name(name), ::std::ios::binary | ::std::ios::out);
 	}
+
 
 	void render_config()
 	{
@@ -255,8 +270,8 @@ struct instance
 					_open_file(_state.channel0, "channel0");
 					while(!_state.channel0.is_open());
 
-					_open_file(_state.channel1, "channel1");
-					while(!_state.channel1.is_open());
+					//_open_file(_state.channel1, "channel1");
+					//while(!_state.channel1.is_open());
 
 					_state.hold_time = _config.hold_time;
 				}
