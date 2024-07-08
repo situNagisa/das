@@ -6,31 +6,15 @@ NGS_LIB_MODULE_BEGIN
 
 namespace _detail
 {
-	template<auto Value>
-	constexpr decltype(auto) enum_name()
-	{
-		constexpr ::std::string_view name = ::ngs::symbols::enum_name<Value>();
-		auto start = name.find_last_of("::") + 1;
-		return ::std::string_view(name.data() + start, name.size() - start);
-	}
-
-	template<typename T, ::std::size_t N = 0>
-	constexpr auto enum_max() {
-		if constexpr (
-			constexpr auto name = ::ngs::symbols::enum_name<static_cast<T>(N)>();
-				::std::ranges::find(name, '(') == ::std::ranges::end(name)
-			)
-			return _detail::enum_max<T, N + 1>();
-		else
-			return N;
-	}
-
 	template<typename T> requires ::std::is_enum_v<T>
 	constexpr auto enum_names() {
-		constexpr auto num = _detail::enum_max<T>();
-		return []<::std::size_t... Is>(::std::index_sequence<Is...>) {
-			return ::std::array<::std::string_view, num>{ _detail::enum_name<static_cast<T>(Is)>()... };
-		}(::std::make_index_sequence<num>{});
+		return ::ngs::enums::contiguous_names<T>();
+
+		//constexpr auto num = ::ngs::enums::contiguous_size<T>();
+		//return []<::std::size_t... Is>(::std::index_sequence<Is...>) {
+		//	return ::std::array<::std::string_view, num>{ ::ngs::enums::enum_name<static_cast<T>(Is)>()... };
+		//}(::std::make_index_sequence<num>{});
+		//
 	}
 }
 
@@ -110,7 +94,7 @@ constexpr decltype(auto) combo(::std::string_view label, auto& current_item)
 	return NGS_LIB_MODULE_NAME::combo(
 		label,
 		current_item,
-		::std::views::iota(0) | ::std::views::take(_detail::enum_max<enum_type>()) | ::std::views::transform([](auto&& v) {return static_cast<enum_type>(v); }),
+		::std::views::iota(0) | ::std::views::take(::ngs::enums::contiguous_size<enum_type>()) | ::std::views::transform([](auto&& v) {return static_cast<enum_type>(v); }),
 		_detail::enum_names<enum_type>()
 	);
 }

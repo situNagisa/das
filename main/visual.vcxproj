@@ -182,10 +182,15 @@
     <ClInclude Include="include\app\application.h" />
     <ClInclude Include="include\app\defined.h" />
     <ClInclude Include="include\app\app.h" />
+    <ClInclude Include="include\app\edfa_module\defined.h" />
+    <ClInclude Include="include\app\edfa_module\edfa.h" />
+    <ClInclude Include="include\app\edfa_module\module.h" />
+    <ClInclude Include="include\app\edfa_module\stream.h" />
     <ClInclude Include="include\app\pcie.h" />
     <ClInclude Include="include\app\pcie6290_250m\buffer.h" />
     <ClInclude Include="include\app\pcie6290_250m\channels.h" />
     <ClInclude Include="include\app\pcie6290_250m\defined.h" />
+    <ClInclude Include="include\app\pcie6290_250m\file.h" />
     <ClInclude Include="include\app\pcie6290_250m\limit.h" />
     <ClInclude Include="include\app\pcie6290_250m\pcie.h" />
   </ItemGroup>

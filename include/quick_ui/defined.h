@@ -17,6 +17,7 @@
 #include "NGS/external/glfw.h"
 #include "NGS/symbol/symbol.h"
 #include "NGS/to_string/to_string.h"
+#include "NGS/enum/enum.h"
 
 #define NGS_LIB_GLOBAL_BEGIN
 #define NGS_LIB_GLOBAL_END

@@ -9,6 +9,7 @@ struct instance
 {
 	using packet_type = ::pcie6920_250m::atomic::packet<::pcie6920_250m::enums::parse_rule::raw_data, ::pcie6920_250m::enums::channel_quantity::_1>;
 	using point_type = ::std::int32_t;
+	using clock_type = ::std::chrono::system_clock;
 
 	struct read_pcie_promise;
 
@@ -92,16 +93,25 @@ struct instance
 		}
 	}
 
+	auto _get_directory() const
+	{
+		return ::std::filesystem::path(_config.root_directory.data()) / _config.type.data();
+	}
+	auto _get_file_name(::std::string_view name) const
+	{
+		return ::std::format("{}_{0:%F}_{0:%T}.bin", _config.type.data(), clock_type::now());
+	}
+
 	void _open_file(::std::ofstream& file, ::std::string_view name) const
 	{
-		::std::filesystem::path dir = ::std::string(_config.root_directory.data());
-		dir /= _config.type.data();
+		::std::filesystem::path dir = _get_directory();
 		
 		if (!::std::filesystem::exists(dir))
 		{
 			::std::filesystem::create_directories(dir);
 		}
-		dir /= ::std::string(_config.type.data()) + '_' + ::std::string(name) + '_' + ::ngs::to_strings::to_string(_config.hold_time) + ".bin";
+
+		dir /= _get_file_name(name);
 		file.open(dir, ::std::ios::binary | ::std::ios::out);
 	}
 
