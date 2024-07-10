@@ -19,6 +19,8 @@
 #include "NGS/to_string/to_string.h"
 #include "NGS/enum/enum.h"
 
+#include "NGS/external/opengl_new/texture.h"
+
 #define NGS_LIB_GLOBAL_BEGIN
 #define NGS_LIB_GLOBAL_END
 

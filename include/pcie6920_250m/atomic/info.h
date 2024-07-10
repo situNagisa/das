@@ -14,7 +14,6 @@ struct info
 	::std::size_t pulse_width{};
 	::std::size_t packet_size{};
 	::std::size_t center_frequency{};
-	::std::size_t fiber_length{};
 };
 
 NGS_LIB_MODULE_END

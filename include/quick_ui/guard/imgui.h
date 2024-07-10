@@ -30,6 +30,7 @@ struct imgui
 		// ImFileDialog requires you to set the CreateTexture and DeleteTexture
 		ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
 			GLuint tex;
+			namespace gl = ::ngs::external::opengl;
 
 			glGenTextures(1, &tex);
 			glBindTexture(GL_TEXTURE_2D, tex);

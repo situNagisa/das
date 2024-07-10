@@ -16,6 +16,11 @@ enum class upload_rate : ::std::uint32_t
 	_50m,
 };
 
+constexpr auto point_precision(upload_rate rate)
+{
+	return ::std::to_underlying(rate) * 4.0f / 10;
+}
+
 enum class parse_rule : ::std::uint32_t
 {
 	raw_data = 0,

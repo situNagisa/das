@@ -214,10 +214,9 @@ struct instance
 				NGS_LOGL(error, "set center frequency fail: ", _info.center_frequency);
 			}
 		}
-		if (::ngs::external::imgui::components::drag("FiberLen", _info.fiber_length))
-		{
-			
-		}
+		::ImGui::Text("FiberLen %.2f km",
+			              ::pcie6920_250m::atomic::unit_size(_info.packet_size) *
+			              ::pcie6920_250m::enums::point_precision(_info.upload_rate) / 1000);
 	}
 
 	void _render_line(::std::string_view title, ::std::span<point_type> independent, ::std::span<point_type> dependent)
@@ -297,7 +296,6 @@ struct instance
 		.pulse_width = 100,
 		.packet_size = 50,
 		.center_frequency = 80,
-		.fiber_length = 200
 	};
 	struct
 	{
