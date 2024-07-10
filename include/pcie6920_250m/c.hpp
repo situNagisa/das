@@ -63,7 +63,7 @@ namespace c_api
 
 	NGS_HPP_INLINE int pcie6920_point_num_per_ch_in_buf_query(unsigned* p_point_num_in_buf_per_ch)
 	{
-		*p_point_num_in_buf_per_ch = 0x100 * 10000;
+		*p_point_num_in_buf_per_ch = 0x100 * 1000000;
 		return 0;
 	}
 

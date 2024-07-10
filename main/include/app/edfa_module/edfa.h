@@ -90,27 +90,27 @@ struct instance
 		{
 			constexpr auto items = ::std::array{ 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200 };
 			auto current = _config.baud_rate.value();
-			::quick_ui::components::combo("baud rate", current, items);
+			::ngs::external::imgui::components::combo("baud rate", current, items);
 			_config.baud_rate = ::boost::asio::serial_port_base::baud_rate{ current };
 		}
 		{
 			auto current = _config.character_size.value();
-			::quick_ui::components::drag("character size", current, 1, 5, 8);
+			::ngs::external::imgui::components::drag("character size", current, 1, 5, 8);
 			_config.character_size = ::boost::asio::serial_port_base::character_size{ current };
 		}
 		{
 			auto current = _config.parity.value();
-			::quick_ui::components::combo("parity", current);
+			::ngs::external::imgui::components::combo("parity", current);
 			_config.parity = ::boost::asio::serial_port_base::parity{ current };
 		}
 		{
 			auto current = _config.stop_bits.value();
-			::quick_ui::components::combo("stop bits", current);
+			::ngs::external::imgui::components::combo("stop bits", current);
 			_config.stop_bits = ::boost::asio::serial_port_base::stop_bits{ current };
 		}
 		{
 			auto current = _config.flow_control.value();
-			::quick_ui::components::combo("flow control", current);
+			::ngs::external::imgui::components::combo("flow control", current);
 			_config.flow_control = ::boost::asio::serial_port_base::flow_control{ current };
 		}
 

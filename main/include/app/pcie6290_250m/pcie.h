@@ -8,7 +8,7 @@ NGS_LIB_MODULE_BEGIN
 struct instance
 {
 	using packet_type = ::pcie6920_250m::atomic::packet<::pcie6920_250m::enums::parse_rule::raw_data, ::pcie6920_250m::enums::channel_quantity::_1>;
-	using point_type = ::std::int32_t;
+	using point_type = ::std::int16_t;
 	using clock_type = ::std::chrono::system_clock;
 
 	struct read_pcie_promise;
@@ -46,11 +46,11 @@ struct instance
 
 		while(true)
 		{
-			if (io.buffer_packet_size() < _buffer.size())
+			while (io.buffer_packet_size() < _buffer.size())
 			{
-				NGS_LOGL(info, "buffer packet size: ", io.buffer_packet_size());
 				co_yield false;
 			}
+			NGS_LOGFL(info, "buffer packet size: %ld, buffer size: %ld", io.buffer_packet_size(), _buffer.size());
 
 			io.read(_buffer.packet_buffer());
 			_buffer.transfer();
@@ -138,7 +138,7 @@ struct instance
 				::std::make_pair(parse_rule::raw_data, "RawData")
 			};
 
-			if (::quick_ui::components::combo<items>("DataSource", _info.parse_rule))
+			if (::ngs::external::imgui::components::combo<items>("DataSource", _info.parse_rule))
 			{
 				if(_instance.set_data_source(_info.parse_rule))
 				{
@@ -155,7 +155,7 @@ struct instance
 				::std::make_pair(upload_rate::_62_5m, "62.5M"),
 				::std::make_pair(upload_rate::_50m, "50M"),
 			};
-			if (::quick_ui::components::combo<items>("UploadRate", _info.upload_rate))
+			if (::ngs::external::imgui::components::combo<items>("UploadRate", _info.upload_rate))
 			{
 				if (_instance.set_upload_rate(_info.upload_rate))
 				{
@@ -169,7 +169,7 @@ struct instance
 				::std::make_pair(channel_quantity::_1, "1"),
 				::std::make_pair(channel_quantity::_2, "2"),
 			};
-			if (::quick_ui::components::combo<items>("DemChQuantity", _info.channel_quantity))
+			if (::ngs::external::imgui::components::combo<items>("DemChQuantity", _info.channel_quantity))
 			{
 				if(_instance.set_demodulation_channel_quantity(_info.channel_quantity))
 				{
@@ -177,7 +177,7 @@ struct instance
 				}
 			}
 		}
-		if (::quick_ui::components::drag("ScanRate", _info.scan_rate))
+		if (::ngs::external::imgui::components::drag("ScanRate", _info.scan_rate))
 		{
 			if(_instance.set_scan_rate(_info.scan_rate))
 			{
@@ -186,7 +186,7 @@ struct instance
 			resize(_info.packet_size, _info.scan_rate);
 			shrink_to_fit();
 		}
-		if (::quick_ui::components::drag("PulseWidth", _info.pulse_width))
+		if (::ngs::external::imgui::components::drag("PulseWidth", _info.pulse_width))
 		{
 			if(_instance.set_pulse_width(_info.pulse_width))
 			{
@@ -194,7 +194,7 @@ struct instance
 			}
 		}
 		::std::size_t total_point_number = ::pcie6920_250m::atomic::unit_size(_info.packet_size);
-		if (::quick_ui::components::drag("TotalPointNum", total_point_number, ::pcie6920_250m::atomic::unit_size_per_packet()))
+		if (::ngs::external::imgui::components::drag("TotalPointNum", total_point_number, ::pcie6920_250m::atomic::unit_size_per_packet()))
 		{
 			if(_info.packet_size != ::pcie6920_250m::atomic::packet_size_floor(total_point_number))
 			{
@@ -207,14 +207,14 @@ struct instance
 				shrink_to_fit();
 			}
 		}
-		if (::quick_ui::components::drag("CenterFreq", _info.center_frequency))
+		if (::ngs::external::imgui::components::drag("CenterFreq", _info.center_frequency,1, {}, {}, "%d m"))
 		{
-			if (_instance.set_center_frequency(_info.center_frequency))
+			if (_instance.set_center_frequency(_info.center_frequency * 1'000'000))
 			{
 				NGS_LOGL(error, "set center frequency fail: ", _info.center_frequency);
 			}
 		}
-		if (::quick_ui::components::drag("FiberLen", _info.fiber_length))
+		if (::ngs::external::imgui::components::drag("FiberLen", _info.fiber_length))
 		{
 			
 		}
@@ -284,7 +284,7 @@ struct instance
 
 		::ImGui::InputText("root dir", _config.root_directory.data(), _config.root_directory.size());
 		::ImGui::InputText("type", _config.type.data(), _config.type.size());
-		::quick_ui::components::drag("hold time", _config.hold_time);
+		::ngs::external::imgui::components::drag("hold time", _config.hold_time);
 	}
 
 	::pcie6920_250m::guard::instance _instance{};
@@ -293,10 +293,10 @@ struct instance
 		.parse_rule = pcie6920_250m::enums::parse_rule::raw_data,
 		.upload_rate = pcie6920_250m::enums::upload_rate::_250m,
 		.channel_quantity = pcie6920_250m::enums::channel_quantity::_1,
-		.scan_rate = 1,
+		.scan_rate = 1000,
 		.pulse_width = 100,
-		.packet_size = 32,
-		.center_frequency = 100,
+		.packet_size = 50,
+		.center_frequency = 80,
 		.fiber_length = 200
 	};
 	struct

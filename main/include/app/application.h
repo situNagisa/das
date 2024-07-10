@@ -11,7 +11,7 @@ struct application
 
 	void run()
 	{
-		while(!_glfw.window().is_should_close())
+		while(!_glfw.window().should_close())
 		{
 			{
 				auto guard = _gui.render();

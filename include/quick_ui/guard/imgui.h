@@ -84,7 +84,7 @@ struct imgui
 		::ImGui::DestroyContext();
 	}
 
-	[[nodiscard]] auto render() const { return NGS_LIB_MODULE_NAME::render(_glfw.window()); }
+	[[nodiscard]] auto render() const { return NGS_LIB_MODULE_NAME::render(_glfw.guard(), _glfw.window()); }
 
 	glfw& _glfw;
 };

@@ -6,12 +6,10 @@ NGS_LIB_MODULE_BEGIN
 
 struct render
 {
-	render(::ngs::external::glfw::window& window)
+	render(::ngs::external::glfw::guards::opengl_guard& guard, ::ngs::external::glfw::window& window)
 		: _window(window)
 	{
-		namespace glfw = ::ngs::external::glfw;
-
-		glfw::GLFW::instance().poll_events();
+		guard.poll_events();
 
 		// Start the Dear ImGui frame
 		::ImGui_ImplOpenGL3_NewFrame();
@@ -24,7 +22,7 @@ struct render
 		// Rendering
 		::ImGui::Render();
 
-		auto [display_w, display_h] = _window.get_framebuffer_size();
+		auto [display_w, display_h] = _window.framebuffer_size();
 		::glViewport(0, 0, display_w, display_h);
 		::glClearColor(0.1f, 0.1f, 0.1f, 1);
 		::glClear(GL_COLOR_BUFFER_BIT);
