@@ -20,9 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="component.h" />
-    <ClInclude Include="component\combo.h" />
     <ClInclude Include="component\defined.h" />
-    <ClInclude Include="component\drag.h" />
     <ClInclude Include="component\plot.h" />
     <ClInclude Include="defined.h" />
     <ClInclude Include="guard.h" />

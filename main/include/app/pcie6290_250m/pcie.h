@@ -30,14 +30,9 @@ struct instance
 	};
 
 	instance()
-		: _read_pcie_handle(read())
 	{
 		resize(_info.packet_size, _info.scan_rate);
 		_instance.config(_info);
-	}
-	~instance()
-	{
-		_read_pcie_handle.destroy();
 	}
 
 	read_pcie_task read()
@@ -75,8 +70,8 @@ struct instance
 	{
 		if(_state.hold_time)
 		{
-			_read_pcie_handle.resume();
-			if(_read_pcie_handle.promise().read_success)
+			_read_pcie_handle->resume();
+			if(_read_pcie_handle->promise().read_success)
 			{
 				if(_state.channel0.is_open())
 				{
@@ -93,14 +88,7 @@ struct instance
 
 			if(!_state.hold_time)
 			{
-				if (_state.channel0.is_open())
-				{
-					_state.channel0.close();
-				}
-				if (_state.channel1.is_open())
-				{
-					_state.channel1.close();
-				}
+				_close_pcie();
 			}
 		}
 	}
@@ -129,6 +117,31 @@ struct instance
 		file.open(dir / _get_file_name(name), ::std::ios::binary | ::std::ios::out);
 	}
 
+	void _start_pcie()
+	{
+		_open_file(_state.channel0, "channel0");
+		while (!_state.channel0.is_open());
+
+		//_open_file(_state.channel1, "channel1");
+		//while(!_state.channel1.is_open());
+
+		_state.hold_time = _config.hold_time;
+
+		_read_pcie_handle.reset(new read_pcie_task(read()));
+	}
+	void _close_pcie()
+	{
+		_read_pcie_handle.reset();
+
+		if (_state.channel0.is_open())
+		{
+			_state.channel0.close();
+		}
+		if (_state.channel1.is_open())
+		{
+			_state.channel1.close();
+		}
+	}
 
 	void render_config()
 	{
@@ -266,13 +279,7 @@ struct instance
 			{
 				if (::ImGui::Button("save", { 100 , 0 }))
 				{
-					_open_file(_state.channel0, "channel0");
-					while(!_state.channel0.is_open());
-
-					//_open_file(_state.channel1, "channel1");
-					//while(!_state.channel1.is_open());
-
-					_state.hold_time = _config.hold_time;
+					_start_pcie();
 				}
 			}
 			else
@@ -312,7 +319,7 @@ struct instance
 
 	::std::vector<point_type> _times{};
 	buffer< packet_type, point_type> _buffer{};
-	read_pcie_task _read_pcie_handle;
+	::std::unique_ptr<read_pcie_task> _read_pcie_handle = nullptr;
 };
 
 NGS_LIB_MODULE_END

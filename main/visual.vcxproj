@@ -182,6 +182,7 @@
     <ClInclude Include="include\app\application.h" />
     <ClInclude Include="include\app\defined.h" />
     <ClInclude Include="include\app\app.h" />
+    <ClInclude Include="include\app\edfa_module.h" />
     <ClInclude Include="include\app\edfa_module\defined.h" />
     <ClInclude Include="include\app\edfa_module\edfa.h" />
     <ClInclude Include="include\app\edfa_module\module.h" />
