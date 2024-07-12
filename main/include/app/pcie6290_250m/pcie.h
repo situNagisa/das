@@ -37,17 +37,21 @@ struct instance
 
 	read_pcie_task read()
 	{
-		auto io = _instance.open_io();
-
-		while(true)
+		while (true)
 		{
+			NGS_LOGL(debug, "open");
+			auto io = _instance.open_io();
+
 			while (io.buffer_packet_size() < _buffer.size())
 			{
+				NGS_LOGL(debug, "wait");
 				co_yield false;
 			}
-			NGS_LOGFL(info, "buffer packet size: %ld, buffer size: %ld", io.buffer_packet_size(), _buffer.size());
+			auto buffer_size = io.buffer_packet_size();
+			auto read_size = io.read(_buffer.packet_buffer());
 
-			io.read(_buffer.packet_buffer());
+			NGS_LOGFL(info, "buffer size: %ld, read size: %ld", buffer_size, read_size);
+
 			_buffer.transfer();
 			co_yield true;
 		}
@@ -68,12 +72,12 @@ struct instance
 
 	void update()
 	{
-		if(_state.hold_time)
+		if (_state.hold_time)
 		{
-			_read_pcie_handle->resume();
-			if(_read_pcie_handle->promise().read_success)
+			_read_pcie_handle.resume();
+			if (_read_pcie_handle.promise().read_success)
 			{
-				if(_state.channel0.is_open())
+				if (_state.channel0.is_open())
 				{
 					auto bytes_channel0 = ::std::as_bytes(_buffer.channel<0>());
 					_state.channel0.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel0)), ::std::ranges::size(bytes_channel0));
@@ -86,7 +90,7 @@ struct instance
 				--_state.hold_time;
 			}
 
-			if(!_state.hold_time)
+			if (!_state.hold_time)
 			{
 				_close_pcie();
 			}
@@ -108,7 +112,7 @@ struct instance
 	void _open_file(::std::ofstream& file, ::std::string_view name) const
 	{
 		::std::filesystem::path dir = _get_directory();
-		
+
 		if (!::std::filesystem::exists(dir))
 		{
 			::std::filesystem::create_directories(dir);
@@ -126,13 +130,9 @@ struct instance
 		//while(!_state.channel1.is_open());
 
 		_state.hold_time = _config.hold_time;
-
-		_read_pcie_handle.reset(new read_pcie_task(read()));
 	}
 	void _close_pcie()
 	{
-		_read_pcie_handle.reset();
-
 		if (_state.channel0.is_open())
 		{
 			_state.channel0.close();
@@ -153,7 +153,7 @@ struct instance
 
 			if (::ngs::external::imgui::components::combo<items>("DataSource", _info.parse_rule))
 			{
-				if(_instance.set_data_source(_info.parse_rule))
+				if (_instance.set_data_source(_info.parse_rule))
 				{
 					NGS_LOGL(error, "set data source fail: ", ::std::to_underlying(_info.parse_rule));
 				}
@@ -184,7 +184,7 @@ struct instance
 			};
 			if (::ngs::external::imgui::components::combo<items>("DemChQuantity", _info.channel_quantity))
 			{
-				if(_instance.set_demodulation_channel_quantity(_info.channel_quantity))
+				if (_instance.set_demodulation_channel_quantity(_info.channel_quantity))
 				{
 					NGS_LOGL(error, "set demodulation channel quantity fail: ", ::std::to_underlying(_info.channel_quantity));
 				}
@@ -192,7 +192,7 @@ struct instance
 		}
 		if (::ngs::external::imgui::components::drag("ScanRate", _info.scan_rate))
 		{
-			if(_instance.set_scan_rate(_info.scan_rate))
+			if (_instance.set_scan_rate(_info.scan_rate))
 			{
 				NGS_LOGL(error, "set scan rate fail: ", _info.scan_rate);
 			}
@@ -201,7 +201,7 @@ struct instance
 		}
 		if (::ngs::external::imgui::components::drag("PulseWidth", _info.pulse_width))
 		{
-			if(_instance.set_pulse_width(_info.pulse_width))
+			if (_instance.set_pulse_width(_info.pulse_width))
 			{
 				NGS_LOGL(error, "set pulse width fail: ", _info.pulse_width);
 			}
@@ -209,7 +209,7 @@ struct instance
 		::std::size_t total_point_number = ::pcie6920_250m::atomic::unit_size(_info.packet_size);
 		if (::ngs::external::imgui::components::drag("TotalPointNum", total_point_number, ::pcie6920_250m::atomic::unit_size_per_packet()))
 		{
-			if(_info.packet_size != ::pcie6920_250m::atomic::packet_size_floor(total_point_number))
+			if (_info.packet_size != ::pcie6920_250m::atomic::packet_size_floor(total_point_number))
 			{
 				_info.packet_size = ::pcie6920_250m::atomic::packet_size_floor(total_point_number);
 				if (_instance.set_scan_packet(_info.packet_size))
@@ -220,7 +220,7 @@ struct instance
 				shrink_to_fit();
 			}
 		}
-		if (::ngs::external::imgui::components::drag("CenterFreq", _info.center_frequency,1, {}, {}, "%d m"))
+		if (::ngs::external::imgui::components::drag("CenterFreq", _info.center_frequency, 1, {}, {}, "%d m"))
 		{
 			if (_instance.set_center_frequency(_info.center_frequency * 1'000'000))
 			{
@@ -228,8 +228,8 @@ struct instance
 			}
 		}
 		::ImGui::Text("FiberLen %.2f km",
-			              ::pcie6920_250m::atomic::unit_size(_info.packet_size) *
-			              ::pcie6920_250m::enums::point_precision(_info.upload_rate) / 1000);
+			::pcie6920_250m::atomic::unit_size(_info.packet_size) *
+			::pcie6920_250m::enums::point_precision(_info.upload_rate) / 1000);
 	}
 
 	void _render_line(::std::string_view title, ::std::span<point_type> independent, ::std::span<point_type> dependent)
@@ -256,8 +256,8 @@ struct instance
 	}
 	void render_plot()
 	{
-		_render_plot("channel 0", { 900,300 },_buffer.channel<0>());
-		_render_plot("channel 1", { 900,300 },_buffer.channel<1>());
+		_render_plot("channel 0", { 900,300 }, _buffer.channel<0>());
+		_render_plot("channel 1", { 900,300 }, _buffer.channel<1>());
 	}
 
 	void render_save()
@@ -275,7 +275,7 @@ struct instance
 		if (::std::strlen(_config.root_directory.data()) && ::std::strlen(_config.type.data()))
 		{
 			::ImGui::SameLine();
-			if(!_state.hold_time)
+			if (!_state.hold_time)
 			{
 				if (::ImGui::Button("save", { 100 , 0 }))
 				{
@@ -307,7 +307,7 @@ struct instance
 	struct
 	{
 		::std::array<char, 128> root_directory{};
-		::std::array<char, 32> type{"unknown"};
+		::std::array<char, 32> type{ "unknown" };
 		::std::size_t hold_time = 1;
 	}_config{};
 	struct
@@ -319,7 +319,7 @@ struct instance
 
 	::std::vector<point_type> _times{};
 	buffer< packet_type, point_type> _buffer{};
-	::std::unique_ptr<read_pcie_task> _read_pcie_handle = nullptr;
+	read_pcie_task _read_pcie_handle{};
 };
 
 NGS_LIB_MODULE_END
