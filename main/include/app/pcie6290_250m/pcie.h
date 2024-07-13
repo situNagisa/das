@@ -12,7 +12,7 @@ struct instance
 {
 	instance()
 	{
-		resize(_configurator.info().packet_size, _configurator.info().process_frame);
+		resize(_configurator.info().packet_size, _configurator.process_frame());
 		_instance.config(_configurator.info());
 	}
 
@@ -78,17 +78,17 @@ struct instance
 			NGS_LOGL(debug, "packet size change: ", _configurator.info().packet_size);
 			if (_instance.set_scan_packet(_configurator.info().packet_size))
 				NGS_LOGL(error, "set packet size fail: ", _configurator.info().packet_size);
-			resize(_configurator.info().packet_size, _configurator.info().process_frame);
+			resize(_configurator.info().packet_size, _configurator.process_frame());
 			shrink_to_fit();
 		}
 	}
 	decltype(auto) _times_to_frame(::std::size_t collect_times) const
 	{
-		return collect_times * _configurator.info().scan_rate / _configurator.info().process_frame;
+		return collect_times * _configurator.info().scan_rate / _configurator.process_frame();
 	}
 	decltype(auto) _frame_to_times(::std::size_t hold_frame) const
 	{
-		return (hold_frame * _configurator.info().process_frame / _configurator.info().scan_rate);
+		return (hold_frame * _configurator.process_frame() / _configurator.info().scan_rate);
 	}
 	void update_saver()
 	{

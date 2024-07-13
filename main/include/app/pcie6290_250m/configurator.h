@@ -40,15 +40,6 @@ struct configurator
 			_is_change.channel_quantity = ::ngs::external::imgui::components::combo<items>("DemChQuantity", _info.channel_quantity);
 		}
 		_is_change.scan_rate = ::ngs::external::imgui::components::drag("ScanRate", _info.scan_rate);
-		_is_change.process_frame = ::ngs::external::imgui::components::drag("ProcessFrame", _info.process_frame, 1, {}, _info.scan_rate);
-		if(!_is_change.process_frame)
-		{
-			if(_info.process_frame > _info.scan_rate)
-			{
-				_info.process_frame = _info.scan_rate;
-				_is_change.process_frame = true;
-			}
-		}
 		_is_change.pulse_width = ::ngs::external::imgui::components::drag("PulseWidth", _info.pulse_width);
 
 		::std::size_t total_point_number = ::pcie6920_250m::atomic::unit_size(_info.packet_size);
@@ -67,20 +58,17 @@ struct configurator
 			::pcie6920_250m::enums::point_precision(_info.upload_rate) / 1000);
 	}
 
-	struct : ::pcie6920_250m::atomic::info {
-		::std::size_t process_frame = 128;
-	}_info
+	auto process_frame() const { return ::std::min(_info.scan_rate, _process_frame); }
+
+	::pcie6920_250m::atomic::info _info
 	{
-		{
-			.parse_rule = pcie6920_250m::enums::parse_rule::raw_data,
+		.parse_rule = pcie6920_250m::enums::parse_rule::raw_data,
 			.upload_rate = pcie6920_250m::enums::upload_rate::_250m,
 			.channel_quantity = pcie6920_250m::enums::channel_quantity::_1,
 			.scan_rate = 1000,
 			.pulse_width = 100,
 			.packet_size = 50,
 			.center_frequency = 80,
-		},
-		128
 	};
 	struct
 	{
@@ -91,8 +79,9 @@ struct configurator
 		bool pulse_width : 1;
 		bool packet_size : 1;
 		bool center_frequency : 1;
-		bool process_frame : 1;
 	}_is_change{};
+
+	::std::size_t _process_frame = 128;
 };
 
 NGS_LIB_MODULE_END
