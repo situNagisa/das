@@ -63,7 +63,6 @@ struct saver
 	::std::array<char, 32> _type{ "unknown" };
 	struct
 	{
-		::std::size_t process_frame = 128;
 		::std::size_t collect_times = 5;
 		::std::size_t current_times = 0;
 		bool save_channel0 = true;
