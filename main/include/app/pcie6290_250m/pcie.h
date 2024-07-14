@@ -94,27 +94,40 @@ struct instance
 	{
 		if (_saver.is_change().save)
 		{
-			_reader.start(_instance, _saver.get_channel0_file(), _saver.get_channel1_file(), _times_to_frame(_saver.info().collect_times));
-			_saver.info().current_times = _saver.info().collect_times;
+			_current_record_times = _saver.info().record_times;
 		}
 	}
 	void update_reader()
 	{
-		if(!_reader.done())
+		if(_current_record_times)
 		{
-			_reader.read();
-			_saver.info().current_times = _frame_to_times(_reader.current_frame());
-
 			if(_reader.done())
 			{
-				_reader.stop();
+				_reader.start(_instance, _saver.get_channel0_file(), _saver.get_channel1_file(), _times_to_frame(_saver.info().collect_times));
+			}
+			if (!_reader.done())
+			{
+				_reader.read();
+
+				if (_reader.done())
+				{
+					_reader.stop();
+					_current_record_times--;
+				}
 			}
 		}
 	}
 
+	bool record_done() const
+	{
+		return _reader.done() && !_current_record_times;
+	}
+
 	void render_config()
 	{
+		::ImGui::BeginDisabled(!record_done());
 		_configurator.render();
+		::ImGui::EndDisabled();
 	}
 
 	void render_plot()
@@ -125,7 +138,9 @@ struct instance
 
 	void render_save()
 	{
-		_saver.render(_reader.done());
+		::ImGui::BeginDisabled(!record_done());
+		_saver.render(record_done(), _frame_to_times(_reader.current_frame()), _current_record_times);
+		::ImGui::EndDisabled();
 	}
 
 	::pcie6920_250m::guard::instance _instance{};
@@ -133,6 +148,8 @@ struct instance
 	saver _saver{};
 	plot _plot{};
 	reader _reader{};
+
+	::std::size_t _current_record_times = 0;
 };
 
 NGS_LIB_MODULE_END

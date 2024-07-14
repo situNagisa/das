@@ -19,7 +19,7 @@ struct saver
 		return ::std::format("{}_{}_{}.bin", _type.data(), ss.str(), name);
 	}
 
-	void render(bool enable_save)
+	void render(bool enable_save, ::std::size_t collect_times = 0, ::std::size_t record_times = 0)
 	{
 		if (::ImGui::Button("open root", { 100 , 0 }))
 		{
@@ -41,13 +41,14 @@ struct saver
 			else
 			{
 				_is_change.save = false;
-				::ImGui::Text("hold time: %ld", _info.current_times);
+				::ImGui::Text("collect/record :[ %ld, %ld ]", collect_times, record_times);
 			}
 		}
 
 		_is_change.root = ::ImGui::InputText("root dir", _root.data(), _root.size());
 		_is_change.type = ::ImGui::InputText("type", _type.data(), _type.size());
-		_is_change.hold_frame = ::ngs::external::imgui::components::drag("collect times", _info.collect_times);
+		_is_change.collect_times = ::ngs::external::imgui::components::drag("collect times", _info.collect_times);
+		_is_change.record_times = ::ngs::external::imgui::components::drag("record times", _info.record_times);
 
 		_is_change.save_channel0 = ::ImGui::Checkbox("save channel 0", &_info.save_channel0);
 		_is_change.save_channel1 = ::ImGui::Checkbox("save channel 1", &_info.save_channel1);
@@ -64,7 +65,7 @@ struct saver
 	struct
 	{
 		::std::size_t collect_times = 5;
-		::std::size_t current_times = 0;
+		::std::size_t record_times = 1;
 		bool save_channel0 = true;
 		bool save_channel1 = true;
 	}_info{};
@@ -73,7 +74,8 @@ struct saver
 		bool save : 1;
 		bool root : 1;
 		bool type : 1;
-		bool hold_frame : 1;
+		bool collect_times : 1;
+		bool record_times : 1;
 		bool save_channel0 : 1;
 		bool save_channel1 : 1;
 	}_is_change{};

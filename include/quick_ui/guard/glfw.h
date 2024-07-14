@@ -6,8 +6,16 @@ NGS_LIB_MODULE_BEGIN
 
 struct glfw
 {
+	auto&& _create_window(::std::string_view title, ::std::size_t width, ::std::size_t height)
+	{
+		namespace hints = ::ngs::external::glfw::hints;
+		_glfw.set_hint<hints::resizable>(false);
+		_glfw.set_hint<hints::maximized>(false);
+		return _glfw.create_window(title, width, height);
+	}
+
 	glfw(::std::string_view title, ::std::size_t width, ::std::size_t height)
-		: _window(_glfw.create_window(title, width, height))
+		: _window(_create_window(title, width, height))
 	{
 		_glfw.swap_interval(0);
 

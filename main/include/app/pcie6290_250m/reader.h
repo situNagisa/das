@@ -92,7 +92,7 @@ struct reader
 		_handle.destroy();
 		_handle = {};
 	}
-	decltype(auto) current_frame() const { return _handle.promise().current_frame; }
+	decltype(auto) current_frame() const { return done() ? 0 : _handle.promise().current_frame; }
 
 	auto&& buffer(this auto&& self) { return self._buffer; }
 
