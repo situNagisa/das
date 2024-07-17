@@ -76,6 +76,10 @@ struct instance
 	void record_end()
 	{
 		NGS_LOGL(debug, "record done");
+
+		_configurator.set_process_frame(1);
+		resize(_configurator.info().packet_size, _configurator.process_frame());
+
 		if (_saver.channel_output_is_open(0))
 			_saver.close_channel_output_file(0);
 		if (_saver.channel_output_is_open(1))
