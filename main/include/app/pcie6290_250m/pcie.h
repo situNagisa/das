@@ -46,6 +46,9 @@ struct instance
 
 		NGS_LOGL(info, ::std::format("record start, total frame: {}, process frame: {}, packet size: {}", _current_frame, _configurator.process_frame(), _configurator.info().packet_size));
 
+		_reader.stop();
+		_reader.start(_instance);
+
 		if(_saver.info().save_channel[0])
 		{
 			if (!_saver.open_channel_output_file(0))
