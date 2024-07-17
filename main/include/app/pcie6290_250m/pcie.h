@@ -13,7 +13,6 @@ struct instance
 	instance()
 	{
 		_configurator.set_process_frame(1);
-
 		resize(_configurator.info().packet_size, _configurator.process_frame());
 		_instance.config(_configurator.info());
 		_reader.start(_instance);
@@ -41,7 +40,7 @@ struct instance
 	void record_start()
 	{
 		_configurator.set_process_frame(128);
-
+		resize(_configurator.info().packet_size, _configurator.process_frame());
 		_current_frame = _saver.info().record_times * _saver.info().collect_times * _configurator.info().scan_rate / _configurator.process_frame();
 
 		NGS_LOGL(info, ::std::format("record start, total frame: {}, process frame: {}, packet size: {}", _current_frame, _configurator.process_frame(), _configurator.info().packet_size));
