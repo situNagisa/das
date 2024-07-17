@@ -32,7 +32,7 @@ struct application
 							::ImGui::SeparatorText("config");
 							_pcie.render_config();
 							::ImGui::SeparatorText("save");
-							_pcie.render_save();
+							_pcie.render_saver();
 
 							::ImGui::EndTabItem();
 						}

@@ -12,8 +12,15 @@ struct instance
 {
 	instance()
 	{
+		_configurator.set_process_frame(1);
+
 		resize(_configurator.info().packet_size, _configurator.process_frame());
 		_instance.config(_configurator.info());
+		_reader.start(_instance);
+	}
+	~instance()
+	{
+		_reader.stop();
 	}
 
 	void resize(::std::size_t packet_size, ::std::size_t process_frame)
@@ -27,15 +34,63 @@ struct instance
 	{
 		_reader.buffer().shrink_to_fit();
 	}
+	bool recording() const
+	{
+		return _current_frame;
+	}
+	void record_start()
+	{
+		_configurator.set_process_frame(128);
+
+		_current_frame = _saver.info().record_times * _saver.info().collect_times * _configurator.info().scan_rate / _configurator.process_frame();
+
+		NGS_LOGL(info, ::std::format("record start, total frame: {}, process frame: {}, packet size: {}", _current_frame, _configurator.process_frame(), _configurator.info().packet_size));
+
+		if(_saver.info().save_channel[0])
+		{
+			if (!_saver.open_channel_output_file(0))
+			{
+				NGS_LOGL(error, "open channel 0 output file fail");
+			}
+		}
+		if (_saver.info().save_channel[1])
+		{
+			if (!_saver.open_channel_output_file(1))
+			{
+				NGS_LOGL(error, "open channel 1 output file fail");
+			}
+		}
+	}
+	void record()
+	{
+		if (_saver.channel_output_is_open(0))
+		{
+			auto buffer = ::std::as_bytes(_reader.buffer().channel<0>());
+			_saver.write_channel_output_file(0, buffer.data(), buffer.size());
+		}
+		if (_saver.channel_output_is_open(1))
+		{
+			auto buffer = ::std::as_bytes(_reader.buffer().channel<1>());
+			_saver.write_channel_output_file(1, buffer.data(), buffer.size());
+		}
+	}
+	void record_end()
+	{
+		NGS_LOGL(debug, "record done");
+		if (_saver.channel_output_is_open(0))
+			_saver.close_channel_output_file(0);
+		if (_saver.channel_output_is_open(1))
+			_saver.close_channel_output_file(1);
+	}
 
 	void update()
 	{
-		update_configure();
+		update_config();
 		update_saver();
 		update_reader();
 	}
-
-	void update_configure()
+	//=================config=================
+	void update_config()
 	{
 		if (_configurator.is_change().parse_rule)
 		{
@@ -82,66 +137,51 @@ struct instance
 			shrink_to_fit();
 		}
 	}
-	decltype(auto) _times_to_frame(::std::size_t collect_times) const
+	void render_config()
 	{
-		return collect_times * _configurator.info().scan_rate / _configurator.process_frame();
+		::ImGui::BeginDisabled(recording());
+		_configurator.render();
+		::ImGui::EndDisabled();
 	}
-	decltype(auto) _frame_to_times(::std::size_t hold_frame) const
-	{
-		return (hold_frame * _configurator.process_frame() / _configurator.info().scan_rate);
-	}
+	//=================saver=================
 	void update_saver()
 	{
 		if (_saver.is_change().save)
 		{
-			_current_record_times = _saver.info().record_times;
+			record_start();
 		}
 	}
+	void render_saver()
+	{
+		::ImGui::BeginDisabled(recording());
+		_saver.render(!recording());
+		::ImGui::EndDisabled();
+	}
+	//=================reader=================
 	void update_reader()
 	{
-		if(_current_record_times)
+		if(_reader.read())
 		{
-			if(_reader.done())
+			if(recording())
 			{
-				_reader.start(_instance, _saver.get_channel0_file(), _saver.get_channel1_file(), _times_to_frame(_saver.info().collect_times));
-			}
-			if (!_reader.done())
-			{
-				_reader.read();
+				_current_frame--;
 
-				if (_reader.done())
+				record();
+
+				if (!recording())
 				{
-					_reader.stop();
-					_current_record_times--;
+					record_end();
 				}
 			}
 		}
 	}
-
-	bool record_done() const
-	{
-		return _reader.done() && !_current_record_times;
-	}
-
-	void render_config()
-	{
-		::ImGui::BeginDisabled(!record_done());
-		_configurator.render();
-		::ImGui::EndDisabled();
-	}
-
+	//=================plot=================
 	void render_plot()
 	{
 		_plot.render("channel 0", { 900,300 }, _reader.buffer().channel<0>());
 		_plot.render("channel 1", { 900,300 }, _reader.buffer().channel<1>());
 	}
 
-	void render_save()
-	{
-		::ImGui::BeginDisabled(!record_done());
-		_saver.render(record_done(), _frame_to_times(_reader.current_frame()), _current_record_times);
-		::ImGui::EndDisabled();
-	}
 
 	::pcie6920_250m::guard::instance _instance{};
 	configurator _configurator{};
@@ -149,7 +189,7 @@ struct instance
 	plot _plot{};
 	reader _reader{};
 
-	::std::size_t _current_record_times = 0;
+	::std::size_t _current_frame = 0;
 };
 
 NGS_LIB_MODULE_END

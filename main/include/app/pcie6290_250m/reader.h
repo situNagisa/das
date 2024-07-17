@@ -8,6 +8,8 @@ NGS_LIB_MODULE_BEGIN
 
 struct reader
 {
+	NGS_PP_INJECT_BEGIN(reader);
+public:
 	using packet_type = ::pcie6920_250m::atomic::packet<::pcie6920_250m::enums::parse_rule::raw_data, ::pcie6920_250m::enums::channel_quantity::_1>;
 	using buffer_type = buffer<packet_type, point_t>;
 
@@ -23,8 +25,8 @@ struct reader
 		read_pcie_task get_return_object() noexcept { return { read_pcie_task::from_promise(*this) }; }
 		static void unhandled_exception() { NGS_LOGL(error, "woc? "); } // ±£¥Ê“Ï≥£
 
-		decltype(auto) yield_value(this self_type& self, ::std::size_t current_frame) { self.current_frame = current_frame; return ::std::suspend_always{};}
-		::std::size_t current_frame = 0;
+		decltype(auto) yield_value(this self_type& self, bool success) { self.success = success; return ::std::suspend_always{};}
+		bool success = false;
 	};
 	bool _try_read(::pcie6920_250m::guard::io& io)
 	{
@@ -33,66 +35,44 @@ struct reader
 		auto buffer_size = io.buffer_packet_size();
 		auto read_size = io.read(_buffer.packet_buffer());
 
-		NGS_LOGFL(debug, "buffer size: %ld, read size: %ld", buffer_size, read_size);
+		//NGS_LOGFL(debug, "buffer size: %ld, read size: %ld", buffer_size, read_size);
 
 		_buffer.transfer();
 		return true;
 	}
-	read_pcie_task _read(::pcie6920_250m::guard::instance& instance, ::std::filesystem::path channel0, ::std::filesystem::path channel1, ::std::size_t hold_frame)
+	read_pcie_task _read(::pcie6920_250m::guard::instance& instance, ::std::predicate<> auto&& predicate)
 	{
 		using namespace ::std::chrono_literals;
-
-		if (!channel0.empty() && !::std::filesystem::exists(channel0.parent_path()))
-		{
-			::std::filesystem::create_directories(channel0.parent_path());
-		}
-		if (!channel1.empty() && !::std::filesystem::exists(channel1.parent_path()))
-		{
-			::std::filesystem::create_directories(channel1.parent_path());
-		}
-
-		::std::ofstream file0(channel0, ::std::ios::binary | ::std::ios::out);
-		::std::ofstream file1(channel1, ::std::ios::binary | ::std::ios::out);
 		auto io = instance.open_io();
-		while (hold_frame--)
+		while (!predicate())
 		{
-			while (!_try_read(io))
-			{
-				co_yield hold_frame;
-			}
-			if (file0)
-			{
-				auto bytes_channel0 = ::std::as_bytes(_buffer.channel<0>());
-				file0.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel0)), ::std::ranges::size(bytes_channel0));
-			}
-			if (file1)
-			{
-				auto bytes_channel1 = ::std::as_bytes(_buffer.channel<1>());
-				file1.write(reinterpret_cast<const char*>(::std::ranges::data(bytes_channel1)), ::std::ranges::size(bytes_channel1));
-			}
-			co_yield hold_frame;
+			co_yield _try_read(io);
 		}
 	}
-	void start(::pcie6920_250m::guard::instance& instance, const ::std::filesystem::path& channel0, const ::std::filesystem::path& channel1, ::std::size_t hold_frame)
+	decltype(auto) start(::pcie6920_250m::guard::instance& instance)
+	{
+		return start_while(instance, [] { return false; });
+	}
+	void start_while(::pcie6920_250m::guard::instance& instance, ::std::predicate<> auto&& predicate)
 	{
 		NGS_ASSERT(done());
-		_handle = _read(instance, channel0, channel1, hold_frame);
+		_handle = self_type::_read(instance, NGS_PP_PERFECT_FORWARD(predicate));
 	}
 	bool done() const
 	{
 		return !_handle || _handle.done();
 	}
-	void read()
+	bool read()
 	{
 		NGS_ASSERT(!done());
 		_handle.resume();
+		return _handle.promise().success;
 	}
 	void stop()
 	{
 		_handle.destroy();
 		_handle = {};
 	}
-	decltype(auto) current_frame() const { return done() ? 0 : _handle.promise().current_frame; }
 
 	auto&& buffer(this auto&& self) { return self._buffer; }
 

@@ -58,7 +58,8 @@ struct configurator
 			::pcie6920_250m::enums::point_precision(_info.upload_rate) / 1000);
 	}
 
-	auto process_frame() const { return ::std::min(_info.scan_rate, _process_frame); }
+	auto process_frame() const { return _process_frame; }
+	void set_process_frame(::std::size_t value) { _process_frame = value; }
 
 	::pcie6920_250m::atomic::info _info
 	{

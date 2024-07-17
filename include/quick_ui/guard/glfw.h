@@ -6,7 +6,7 @@ NGS_LIB_MODULE_BEGIN
 
 struct glfw
 {
-	auto&& _create_window(::std::string_view title, ::std::size_t width, ::std::size_t height)
+	auto _create_window(::std::string_view title, ::std::size_t width, ::std::size_t height)
 	{
 		namespace hints = ::ngs::external::glfw::hints;
 		_glfw.set_hint<hints::resizable>(false);
@@ -35,7 +35,7 @@ struct glfw
 	const auto& window() const { return _window; }
 
 	::ngs::external::glfw::guards::opengl_guard _glfw{ 3,0 };
-	::ngs::external::glfw::window& _window;
+	::ngs::external::glfw::window _window;
 };
 
 NGS_LIB_MODULE_END
