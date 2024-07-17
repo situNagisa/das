@@ -41,7 +41,8 @@ struct instance
 	{
 		_configurator.set_process_frame(128);
 		resize(_configurator.info().packet_size, _configurator.process_frame());
-		_current_frame = _saver.info().record_times * _saver.info().collect_times * _configurator.info().scan_rate / _configurator.process_frame();
+
+		_current_frame = _saver.info().collect_times * _configurator.info().scan_rate / _configurator.process_frame();
 
 		NGS_LOGL(info, ::std::format("record start, total frame: {}, process frame: {}, packet size: {}", _current_frame, _configurator.process_frame(), _configurator.info().packet_size));
 
@@ -142,7 +143,7 @@ struct instance
 	}
 	void render_config()
 	{
-		::ImGui::BeginDisabled(recording());
+		::ImGui::BeginDisabled(recording() || _record_times);
 		_configurator.render();
 		::ImGui::EndDisabled();
 	}
@@ -151,13 +152,13 @@ struct instance
 	{
 		if (_saver.is_change().save)
 		{
-			record_start();
+			_record_times = _saver.info().record_times;
 		}
 	}
 	void render_saver()
 	{
-		::ImGui::BeginDisabled(recording());
-		_saver.render(!recording());
+		::ImGui::BeginDisabled(recording() || _record_times);
+		_saver.render(!recording() && !_record_times);
 		::ImGui::EndDisabled();
 	}
 	//=================reader=================
@@ -165,15 +166,23 @@ struct instance
 	{
 		if(_reader.read())
 		{
-			if(recording())
+			if(_record_times)
 			{
-				_current_frame--;
-
-				record();
-
-				if (!recording())
+				if(!recording())
 				{
-					record_end();
+					record_start();
+				}
+				if (recording())
+				{
+					_current_frame--;
+
+					record();
+
+					if (!recording())
+					{
+						record_end();
+						_record_times--;
+					}
 				}
 			}
 		}
@@ -193,6 +202,7 @@ struct instance
 	reader _reader{};
 
 	::std::size_t _current_frame = 0;
+	::std::size_t _record_times = 0;
 };
 
 NGS_LIB_MODULE_END
