@@ -157,12 +157,27 @@ struct instance
 		{
 			_record_times = _saver.info().record_times;
 		}
+		
 	}
 	void render_saver()
 	{
 		::ImGui::BeginDisabled(recording() || _record_times);
-		_saver.render(!recording() && !_record_times);
+		_saver.render(!recording() && !_record_times, _record_times);
 		::ImGui::EndDisabled();
+		if(_record_success)
+		{
+			::ImGui::OpenPopup("record done!");
+			if (::ImGui::BeginPopupModal("record done!", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				::ImGui::Text("recorded %ld files", _saver.info().record_times);
+				if (::ImGui::Button("OK", { 50, 0 }))
+				{
+					_record_success = false;
+					::ImGui::CloseCurrentPopup();
+				}
+				::ImGui::EndPopup();
+			}
+		}
 	}
 	//=================reader=================
 	void update_reader()
@@ -187,6 +202,10 @@ struct instance
 						_record_times--;
 					}
 				}
+				if(!_record_times)
+				{
+					_record_success = true;
+				}
 			}
 		}
 	}
@@ -206,6 +225,7 @@ struct instance
 
 	::std::size_t _current_frame = 0;
 	::std::size_t _record_times = 0;
+	bool _record_success = false;
 };
 
 NGS_LIB_MODULE_END

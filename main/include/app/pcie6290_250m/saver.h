@@ -21,7 +21,7 @@ struct saver
 		return ::std::format("{}_{}_{}.bin", _type.data(), ss.str(), index);
 	}
 
-	void render(bool enable_save)
+	void render(bool enable_save, ::std::size_t record_times)
 	{
 		if (::ImGui::Button("open root", { 100 , 0 }))
 		{
@@ -43,7 +43,7 @@ struct saver
 			else
 			{
 				_is_change.save = false;
-				::ImGui::Text("recording...");
+				::ImGui::Text("remaining record times: %ld", record_times);
 			}
 		}
 

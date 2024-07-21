@@ -190,9 +190,14 @@
     <ClInclude Include="include\app\pcie.h" />
     <ClInclude Include="include\app\pcie6290_250m\buffer.h" />
     <ClInclude Include="include\app\pcie6290_250m\channels.h" />
+    <ClInclude Include="include\app\pcie6290_250m\configurator.h" />
     <ClInclude Include="include\app\pcie6290_250m\defined.h" />
     <ClInclude Include="include\app\pcie6290_250m\limit.h" />
     <ClInclude Include="include\app\pcie6290_250m\pcie.h" />
+    <ClInclude Include="include\app\pcie6290_250m\plot.h" />
+    <ClInclude Include="include\app\pcie6290_250m\reader.h" />
+    <ClInclude Include="include\app\pcie6290_250m\saver.h" />
+    <ClInclude Include="include\app\pcie6290_250m\type.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
