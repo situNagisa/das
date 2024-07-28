@@ -146,6 +146,7 @@ struct instance
 	}
 	void render_config()
 	{
+		::ImGui::Checkbox("show", &_visible);
 		::ImGui::BeginDisabled(recording() || _record_times);
 		_configurator.render();
 		::ImGui::EndDisabled();
@@ -180,6 +181,7 @@ struct instance
 		}
 	}
 	//=================reader=================
+
 	void update_reader()
 	{
 		if(_reader.read())
@@ -212,8 +214,17 @@ struct instance
 	//=================plot=================
 	void render_plot()
 	{
-		_plot.render("channel 0", { 900,300 }, _reader.buffer().channel<0>());
-		_plot.render("channel 1", { 900,300 }, _reader.buffer().channel<1>());
+		if (_visible)
+		{
+			_plot.render("channel 0", { 900,300 }, _reader.buffer().channel<0>());
+			_plot.render("channel 1", { 900,300 }, _reader.buffer().channel<1>());
+		}
+		else
+		{
+			auto none = ::std::views::repeat(static_cast<point_t>(0)) | ::std::views::take(_reader.buffer().channel<0>().size()) | ::std::ranges::to<::std::vector<point_t>>();
+			_plot.render("channel 0", { 900,300 }, none);
+			_plot.render("channel 1", { 900,300 }, none);
+		}
 	}
 
 
@@ -223,6 +234,7 @@ struct instance
 	plot _plot{};
 	reader _reader{};
 
+	bool _visible = false;
 	::std::size_t _current_frame = 0;
 	::std::size_t _record_times = 0;
 	bool _record_success = false;
