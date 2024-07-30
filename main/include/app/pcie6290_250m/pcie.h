@@ -25,6 +25,11 @@ struct instance
 	void resize(::std::size_t packet_size, ::std::size_t process_frame)
 	{
 		_plot.set_time_span(::pcie6920_250m::atomic::unit_size(packet_size));
+		if (!_reader.done())
+		{
+			_reader.stop();
+			_reader.start(_instance);
+		}
 		_reader.buffer().resize(packet_size * process_frame);
 		NGS_LOGL(debug, ::std::format("packet size: {}, frame per scan: {}", packet_size, process_frame));
 	}
